@@ -58,8 +58,11 @@ namespace Imaginosia
 			Assets.Tex2["bearImaginary"] = SlicedSprite.Frameify(Content.Load<Texture2D>("BearImaginary"), 6, 0);
 
 
+			Assets.Tex["flashlightMask"] = Content.Load<Texture2D>("FlashlightMask");
 			Assets.Tex["special"] = new Texture2D(GraphicsDevice, 1, 1);
 			Assets.Tex["special"].SetData(new Color[] { Color.White });
+
+			Assets.Darkness = Content.Load<Effect>("DarknessShader");
 
 			// TODO: use this.Content to load your game content here
 		}
@@ -90,6 +93,23 @@ namespace Imaginosia
 			// spriteBatch.LayerBegin("player", blendState: BlendState.Additive);
 			// spriteBatch.LayerEnd();
 
+			spriteBatch.LayerBegin("light");
+
+			spriteBatch.Draw(Assets.Tex["flashlightMask"], gamestate.player.ScreenPosition, null, Color.White, (float)Math.Atan2(gamestate.player.direction.Y, gamestate.player.direction.X) - MathHelper.PiOver2, new Vector2(50, 10), 1, SpriteEffects.None, 0);
+
+			spriteBatch.LayerEnd();
+
+
+			Assets.Darkness.Parameters["LightMask"].SetValue(spriteBatch.GetLayer("light"));
+
+			spriteBatch.LayerBegin("final", effect: Assets.Darkness);
+			spriteBatch.DrawLayer("tiles");
+			spriteBatch.LayerEnd();
+
+			spriteBatch.Begin(samplerState: SamplerState.PointClamp);
+			UIHandler.Draw(spriteBatch);
+			spriteBatch.End();
+
 			Rectangle destination = Window.ClientBounds;
 			destination.Location -= Window.Position;
 
@@ -101,11 +121,13 @@ namespace Imaginosia
 			destination.Size = new Point(GameWidth * ScreenScalingFactor, GameHeight * ScreenScalingFactor);
 
 			spriteBatch.FrameBegin(samplerState: SamplerState.PointClamp);
-			spriteBatch.Draw(spriteBatch.GetLayer("tiles"), destination, Color.White);
+			spriteBatch.Draw(spriteBatch.GetLayer("final"), destination, Color.White);
 			// spriteBatch.Draw(spriteBatch.GetLayer("player"), destination, Color.White);
 			spriteBatch.FrameEnd();
 
 			spriteBatch.DisposeLayer("tiles");
+			spriteBatch.DisposeLayer("light");
+			spriteBatch.DisposeLayer("final");
 			// spriteBatch.DisposeLayer("player");
 
 

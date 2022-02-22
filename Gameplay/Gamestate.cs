@@ -99,9 +99,6 @@ namespace Imaginosia.Gameplay
 				TextPrinter.Print("Special Tile", PositionHelper.ToScreenPosition(MouseHelper.MouseTileHover.ToVector2()), spriteBatcher);
 
 			spriteBatcher.End();
-			spriteBatcher.Begin(samplerState: SamplerState.PointClamp);
-			UIHandler.Draw(spriteBatcher);
-			spriteBatcher.End();
 		}
 	}
 }
