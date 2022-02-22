@@ -15,6 +15,11 @@ sampler2D SpriteTextureSampler = sampler_state
 	Texture = <SpriteTexture>;
 };
 
+sampler2D LightMaskSampler = sampler_state
+{
+	Texture = <LightMask>;
+};
+
 struct VertexShaderOutput
 {
 	float4 Position : SV_POSITION;
@@ -24,7 +29,7 @@ struct VertexShaderOutput
 
 float4 MainPS(VertexShaderOutput input) : COLOR
 {
-	return tex2D(SpriteTextureSampler,input.TextureCoordinates) * input.Color; // *LightMask.Sample(SpriteTextureSampler, input.TextureCoordinates);
+	return tex2D(SpriteTextureSampler,input.TextureCoordinates) * input.Color * tex2D(LightMaskSampler, input.TextureCoordinates);
 }
 
 technique SpriteDrawing

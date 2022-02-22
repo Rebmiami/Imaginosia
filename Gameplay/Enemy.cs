@@ -29,6 +29,11 @@ namespace Imaginosia.Gameplay
 
 		public bool dead; // If the enemy is dead, this will be true.
 
+		public int despawnTimer;
+		public bool remove = false;
+
+		public EnemyState state;
+
 		public Vector2 direction = Vector2.UnitX;
 
 		public virtual void Spawn(Vector2 position, int type)
@@ -37,6 +42,8 @@ namespace Imaginosia.Gameplay
 			Game1.gamestate.enemies.Add(this);
 			this.position = position;
 			this.position = position - (GetFoot() - position);
+			fear = 0;
+			despawnTimer = 900;
 
 			SetDefaults();
 		}
@@ -63,7 +70,64 @@ namespace Imaginosia.Gameplay
 
 		public override void Update()
 		{
-			fear *= 0.995f;
+			// TODO: The following actions should scare enemies:
+			// - Moving in their direction
+			// - Taking damage
+			// - Shining the flashlight
+
+			if (fear > 0)
+				fear -= 0.001f;
+
+			if (fear < 0)
+				fear = 0;
+
+			if (hitTimer > 0)
+			{
+				hitTimer--;
+			}
+
+			if (!dead && Vector2.Distance(position, Game1.gamestate.player.position) < 50)
+			{
+				despawnTimer = 900;
+			}
+
+			if (despawnTimer > 0)
+			{
+				despawnTimer--;
+				if (despawnTimer <= 0)
+				{
+					remove = true;
+				}
+			}
+
+			switch (state)
+			{
+				case EnemyState.Sleep:
+					break;
+				case EnemyState.Wander:
+					break;
+				case EnemyState.Sneak:
+					break;
+				case EnemyState.Attack:
+					break;
+				case EnemyState.Flee:
+					break;
+				default:
+					break;
+			}
+		}
+
+		public virtual void TakeDamage(int damage, Vector2 knockback)
+		{
+			health -= damage;
+			velocity += knockback;
+			if (health < maxHealth)
+			{
+				dead = true;
+				animFrame = 6;
+				hitTimer = 6;
+				
+			}
 		}
 
 		public override void Draw(SpriteBatcher spriteBatcher)

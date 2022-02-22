@@ -55,12 +55,14 @@ namespace Imaginosia.Graphics
 			// Draw inventory
 			for (int i = 0; i < player.inventory.Length; i++)
 			{
+				Vector2 position = new Vector2(10, 140);
+				position += new Vector2(18, 0) * i;
+				if (i == player.itemSlot)
+					position += new Vector2(0, -10);
+				spriteBatcher.Draw(Assets.Tex2["inventory"].texture, position, Assets.Tex2["inventory"].frames[0], Color.White);
 				if (player.inventory[i] == null)
 					continue;
-				Vector2 position = new Vector2(60, 400) + MathTools.RotateVector(new Vector2(0, -30), MathHelper.TwoPi / 5 * (-i + player.itemSlot));
-				if (player.inventory[i] == player.HeldItem)
-					position += new Vector2(0, -30);
-				// DrawHandler.Draw(Item.textures[player.guns[i].GetType().Name], position, null, Color.White, centerBottom: true);
+				player.inventory[i].Draw(position, spriteBatcher);
 			}
 
 			// Draw gun name and reloading text/ammo counter

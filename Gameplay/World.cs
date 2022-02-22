@@ -54,6 +54,10 @@ namespace Imaginosia.Gameplay
 					WorldTile tile = tiles[i, j];
 
 					spriteBatcher.Draw(groundTex.texture, PositionHelper.ToScreenPosition(new Vector2(i, j)), groundTex.frames[tile.sprite], Color.White);
+					if (tile.floorItem != null)
+					{
+						tile.floorItem.Draw(PositionHelper.ToScreenPosition(new Vector2(i, j - 1)), spriteBatcher);
+					}
 				}
 			}
 		}

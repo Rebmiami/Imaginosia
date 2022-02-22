@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Imaginosia.Gameplay;
+using Imaginosia.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
@@ -85,6 +87,11 @@ namespace Imaginosia
 		public static Vector2 Position
 		{
 			get => Mouse.GetState().Position.ToVector2() / Game1.ScreenScalingFactor + Game1.ScreenOriginOffset.ToVector2();
+		}
+
+		public static Point MouseTileHover
+		{
+			get => Vector2.Clamp(PositionHelper.ToGamePosition(Position), Vector2.Zero, new Vector2(World.WorldWidth, World.WorldHeight) - Vector2.One).ToPoint();
 		}
 	}
 

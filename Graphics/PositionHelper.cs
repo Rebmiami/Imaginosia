@@ -19,7 +19,7 @@ namespace Imaginosia.Graphics
 
 		public static Vector2 ToGamePosition(Vector2 vector, bool noCamera = false)
 		{
-			return (vector + (noCamera ? Vector2.Zero : CameraPos)) / new Vector2(TileWidth, TileHeight);
+			return (vector) / new Vector2(TileWidth, TileHeight) + (noCamera ? Vector2.Zero : CameraPos);
 		}
 	}
 }

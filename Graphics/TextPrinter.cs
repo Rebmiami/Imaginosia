@@ -35,7 +35,7 @@ namespace Imaginosia.Graphics
 				4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0,
 				0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 1, 0, 1, 0, 0,
 				-1, 0, 0, 0, 0, 0, 0, 3, 0, 2, 1, 0, 2, 4, 0, 0,
-				3, 3, 0, 0, 1, 0, 0, 4, 0, 3, 0, 0, 2, 0, 4, -1
+				3, 3, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 2, 0, 4, -1
 			};
 
 			for (int i = 0; i < characterSheet.frames.Length; i++)
@@ -62,7 +62,8 @@ namespace Imaginosia.Graphics
 						newFrame[i].Size = new Point(0);
 						break;
 				}
-				newFrame[i].Size = (newFrame[i].Size.ToVector2() + new Vector2(1, 0)).ToPoint();
+				newFrame[i].Y -= 1;
+				newFrame[i].Size = (newFrame[i].Size.ToVector2() + new Vector2(1, 1)).ToPoint();
 			}
 			characterSheet.frames = newFrame;
 		}

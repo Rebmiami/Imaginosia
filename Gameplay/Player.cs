@@ -32,6 +32,7 @@ namespace Imaginosia.Gameplay
 		public ControllerType controller = ControllerType.Keyboard;
 		public PlayerIndex gamepadNumber = PlayerIndex.One;
 		public Vector2 direction = Vector2.UnitX;
+		public Vector2 gameDirection = Vector2.UnitX;
 
 		public Item HeldItem
 		{
@@ -45,6 +46,8 @@ namespace Imaginosia.Gameplay
 
 		public override void Update()
 		{
+			float noise = 1f;
+
 			if (inventory[itemSlot] == null || inventory[itemSlot].useTime == 0)
 			{
 				int itemSwap = Keybinds.SwapItem(controller, gamepadNumber);
@@ -87,19 +90,53 @@ namespace Imaginosia.Gameplay
 			if (velocity.Length() > speed)
 			velocity = Vector2.Normalize(velocity) * speed;
 
+			noise += velocity.Length();
 
 			direction = Vector2.Normalize(MouseHelper.Position - ScreenPosition);
+			gameDirection = Vector2.Normalize(PositionHelper.ToGamePosition(direction, true));
 
 			foreach (Item item in inventory)
 			{
 				item?.Update();
 			}
 
+
+			if (KeyHelper.Down(Keys.LeftShift) || KeyHelper.Down(Keys.RightShift))
+			{
+				if (MouseHelper.Pressed(MouseButton.Left) && inventory[itemSlot] != null)
+				{
+					WorldTile tile = Game1.gamestate.world.tiles[MouseHelper.MouseTileHover.X, MouseHelper.MouseTileHover.Y];
+
+					tile.PlaceItem(ref inventory[itemSlot]);
+				}
+				if (MouseHelper.Pressed(MouseButton.Right) && inventory[itemSlot] == null)
+				{
+					WorldTile tile = Game1.gamestate.world.tiles[MouseHelper.MouseTileHover.X, MouseHelper.MouseTileHover.Y];
+
+					inventory[itemSlot] = tile.TakeItem();
+				}
+			}
+			else
+			{
+				if (MouseHelper.Pressed(MouseButton.Right) && inventory[0].CanUseItem())
+				{
+					inventory[0].UseItem();
+
+					new Projectile(position, gameDirection, 10, 0)
+					{
+						updateRes = 4,
+						timeLeft = 16,
+						knockback = 4
+					};
+				}
+			}
+
+
 			if (HeldItem != null && HeldItem.CanUseItem())
 			{
 				if (HeldItem.usesLeft > 0 && Keybinds.UseItem(controller, gamepadNumber))
 				{
-					// inventory[itemSlot].FireGun(GetFoot() + new Vector2(0, -32), direction, this);
+					// inventory[itemSlot].UseItem(GetFoot() + new Vector2(0, -32), direction, this);
 				}
 			}
 
@@ -128,6 +165,11 @@ namespace Imaginosia.Gameplay
 				// 		Game1.gameState.items.Remove(toPick);
 				// 	}
 				// }
+			}
+
+			foreach (var item in Game1.gamestate.enemies)
+			{
+				item.fear += Math.Min(1 / Vector2.Distance(position, item.position), 1) * noise * 0.01f;
 			}
 
 			base.Update();

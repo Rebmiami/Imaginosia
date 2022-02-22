@@ -98,28 +98,6 @@ namespace Imaginosia.Gameplay
 			{
 				switch (itemID)
 				{
-					case ItemType.Gun: return "Gun";
-					case ItemType.Knife: return "Survival Knife";
-					case ItemType.Axe: return "Survival Axe";
-					case ItemType.Matchbox: return "Matchbox";
-					case ItemType.MeatRaw: return "Raw Meat";
-					case ItemType.MeatCooked: return "Cooked Meat";
-					case ItemType.Fur: return "Fur";
-					case ItemType.Clothes: return "Clothing";
-					case ItemType.Bag: return "Bag";
-					case ItemType.Bone: return "Bone";
-					case ItemType.BoneKnife: return "Bone Knife";
-					case ItemType.BoneTrap: return "Bone Trap";
-					case ItemType.Wood: return "Wood";
-					case ItemType.WoodStake: return "Wooden Stake";
-					default:
-						break;
-				}
-			}
-			else
-			{
-				switch (itemID)
-				{
 					case ItemType.Gun: return "Magic Wand";
 					case ItemType.Knife: return "Sacred Sword";
 					case ItemType.Axe: return "Super Hammer";
@@ -138,12 +116,39 @@ namespace Imaginosia.Gameplay
 						break;
 				}
 			}
+			else
+			{
+				switch (itemID)
+				{
+					case ItemType.Gun: return "Gun";
+					case ItemType.Knife: return "Survival Knife";
+					case ItemType.Axe: return "Survival Axe";
+					case ItemType.Matchbox: return "Matchbox";
+					case ItemType.MeatRaw: return "Raw Meat";
+					case ItemType.MeatCooked: return "Cooked Meat";
+					case ItemType.Fur: return "Fur";
+					case ItemType.Clothes: return "Clothing";
+					case ItemType.Bag: return "Bag";
+					case ItemType.Bone: return "Bone";
+					case ItemType.BoneKnife: return "Bone Knife";
+					case ItemType.BoneTrap: return "Bone Trap";
+					case ItemType.Wood: return "Wood";
+					case ItemType.WoodStake: return "Wooden Stake";
+					default:
+						break;
+				}
+			}
 			return "Not An Item";
 		}
 
 		public int GetSlice()
 		{
 			return (int)itemID * 2 + (ImaginationHandler.IsImagination ? 1 : 0);
+		}
+
+		public void Draw(Vector2 position, SpriteBatcher batcher)
+		{
+			batcher.Draw(Assets.Tex2["items"].texture, position, Assets.Tex2["items"].frames[GetSlice()], Color.White);
 		}
 	}
 }
