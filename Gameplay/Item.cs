@@ -27,6 +27,7 @@ namespace Imaginosia.Gameplay
 			{
 				case ItemType.Gun:
 					usesLeft = 20;
+					useCooldown = 10;
 					stackable = false;
 					consumable = false;
 					break;
@@ -35,24 +36,36 @@ namespace Imaginosia.Gameplay
 				case ItemType.Axe:
 					break;
 				case ItemType.MeatRaw:
+					stackable = true;
 					consumable = true;
 					break;
 				case ItemType.MeatCooked:
+					stackable = true;
 					consumable = true;
 					break;
 				case ItemType.Fur:
+					stackable = true;
+					maxStack = 15;
 					break;
 				case ItemType.Clothes:
 					break;
 				case ItemType.Bag:
 					break;
 				case ItemType.Bone:
+					stackable = true;
+					maxStack = 15;
 					break;
 				case ItemType.BoneKnife:
+					stackable = true;
+					maxStack = 15;
 					break;
 				case ItemType.BoneTrap:
+					stackable = true;
+					maxStack = 15;
 					break;
 				case ItemType.Wood:
+					stackable = true;
+					maxStack = 15;
 					break;
 				case ItemType.WoodStake:
 					break;
@@ -92,26 +105,41 @@ namespace Imaginosia.Gameplay
 				useTime--;
 		}
 
+		public static void MergeStacks(ref Item stackTo, ref Item stackFrom)
+		{
+			stackTo.stackCount += stackFrom.stackCount;
+			if (stackTo.stackCount > stackTo.maxStack)
+			{
+				stackFrom.stackCount = stackTo.stackCount - stackTo.maxStack;
+				stackTo.stackCount = stackTo.maxStack;
+			}
+			else
+			{
+				stackFrom = null;
+			}
+		}
+
 		public virtual string GetName()
 		{
+			string name = "Not An Item";
 			if (ImaginationHandler.IsImagination)
 			{
 				switch (itemID)
 				{
-					case ItemType.Gun: return "Magic Wand";
-					case ItemType.Knife: return "Sacred Sword";
-					case ItemType.Axe: return "Super Hammer";
-					case ItemType.Matchbox: return "Baby Dragon";
-					case ItemType.MeatRaw: return "Cookie Dough";
-					case ItemType.MeatCooked: return "Baked Cookies";
-					case ItemType.Fur: return "Fluffy Cotton";
-					case ItemType.Clothes: return "Enchanted Robes";
-					case ItemType.Bag: return "Magic Pouch";
-					case ItemType.Bone: return "Candy Cane";
-					case ItemType.BoneKnife: return "Spearmint";
-					case ItemType.BoneTrap: return "Sugar Bomb";
-					case ItemType.Wood: return "Wacky Wood";
-					case ItemType.WoodStake: return "Fancy Fence";
+					case ItemType.Gun: name = "Magic Wand";				  break;
+					case ItemType.Knife: name = "Sacred Sword";			  break;
+					case ItemType.Axe: name = "Super Hammer";			  break;
+					case ItemType.Matchbox: name = "Baby Dragon";		  break;
+					case ItemType.MeatRaw: name = "Cookie Dough";		  break;
+					case ItemType.MeatCooked: name = "Baked Cookies";	  break;
+					case ItemType.Fur: name = "Fluffy Cotton";			  break;
+					case ItemType.Clothes: name = "Enchanted Robes";	  break;
+					case ItemType.Bag: name = "Magic Pouch";			  break;
+					case ItemType.Bone: name = "Candy Cane";			  break;
+					case ItemType.BoneKnife: name = "Spearmint";		  break;
+					case ItemType.BoneTrap: name = "Sugar Bomb";		  break;
+					case ItemType.Wood: name = "Wacky Wood";			  break;
+					case ItemType.WoodStake: name = "Fancy Fence";        break;
 					default:
 						break;
 				}
@@ -120,25 +148,25 @@ namespace Imaginosia.Gameplay
 			{
 				switch (itemID)
 				{
-					case ItemType.Gun: return "Gun";
-					case ItemType.Knife: return "Survival Knife";
-					case ItemType.Axe: return "Survival Axe";
-					case ItemType.Matchbox: return "Matchbox";
-					case ItemType.MeatRaw: return "Raw Meat";
-					case ItemType.MeatCooked: return "Cooked Meat";
-					case ItemType.Fur: return "Fur";
-					case ItemType.Clothes: return "Clothing";
-					case ItemType.Bag: return "Bag";
-					case ItemType.Bone: return "Bone";
-					case ItemType.BoneKnife: return "Bone Knife";
-					case ItemType.BoneTrap: return "Bone Trap";
-					case ItemType.Wood: return "Wood";
-					case ItemType.WoodStake: return "Wooden Stake";
+					case ItemType.Gun: name = "Gun";			    break;
+					case ItemType.Knife: name = "Survival Knife";   break;
+					case ItemType.Axe: name = "Survival Axe";	    break;
+					case ItemType.Matchbox: name = "Matchbox";	    break;
+					case ItemType.MeatRaw: name = "Raw Meat";	    break;
+					case ItemType.MeatCooked: name = "Cooked Meat"; break;
+					case ItemType.Fur: name = "Fur";			    break;
+					case ItemType.Clothes: name = "Clothing";	    break;
+					case ItemType.Bag: name = "Bag";			    break;
+					case ItemType.Bone: name = "Bone";			    break;
+					case ItemType.BoneKnife: name = "Bone Knife";   break;
+					case ItemType.BoneTrap: name = "Bone Trap";	    break;
+					case ItemType.Wood: name = "Wood";			    break;
+					case ItemType.WoodStake: name = "Wooden Stake"; break;
 					default:
 						break;
 				}
 			}
-			return "Not An Item";
+			return name + (stackCount > 1 ? " x" + stackCount : "");
 		}
 
 		public int GetSlice()

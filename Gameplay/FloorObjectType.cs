@@ -6,6 +6,7 @@ namespace Imaginosia.Gameplay
 {
 	public enum FloorObjectType
 	{
+		None,
 		Tree,
 		Campfire,
 		Fence,

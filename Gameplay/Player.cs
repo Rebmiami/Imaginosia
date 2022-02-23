@@ -55,9 +55,18 @@ namespace Imaginosia.Gameplay
 
 		public float directionChange;
 
+		public string MouseText;
+
+		public const int MaxTileReach = 4;
+
 		public override void Update()
 		{
+			bool canInteractTile = Vector2.Distance(GamePosition, MouseHelper.MouseTileHover.ToVector2()) < MaxTileReach;
+			MouseText = null;
+
 			noise = 1;
+
+			int inventorySize = 7;
 
 			if (inventory[itemSlot] == null || inventory[itemSlot].useTime == 0)
 			{
@@ -65,10 +74,10 @@ namespace Imaginosia.Gameplay
 				if (Math.Abs(itemSwap) >= 1)
 				{
 					itemSlot += itemSwap;
-					itemSlot %= 5;
+					itemSlot %= inventorySize;
 					if (itemSlot < 0)
 					{
-						itemSlot = 4;
+						itemSlot = inventorySize - 1;
 					}
 				}
 			}
@@ -113,24 +122,79 @@ namespace Imaginosia.Gameplay
 				item?.Update();
 			}
 
+			WorldTile focusTile = Game1.gamestate.world.tiles[MouseHelper.MouseTileHover.X, MouseHelper.MouseTileHover.Y];
+
+			if (canInteractTile && focusTile.floorItem != null)
+			{
+				MouseText = focusTile.floorItem.GetName();
+			}
+
 
 			if (KeyHelper.Down(Keys.LeftShift) || KeyHelper.Down(Keys.RightShift))
 			{
-				if (MouseHelper.Pressed(MouseButton.Left) && inventory[itemSlot] != null)
+				if (itemSlot <= 3)
 				{
-					WorldTile tile = Game1.gamestate.world.tiles[MouseHelper.MouseTileHover.X, MouseHelper.MouseTileHover.Y];
-
-					tile.PlaceItem(ref inventory[itemSlot]);
+					MouseText = "Cannot drop this item";
 				}
-				if (MouseHelper.Pressed(MouseButton.Right) && inventory[itemSlot] == null)
+				else
 				{
-					WorldTile tile = Game1.gamestate.world.tiles[MouseHelper.MouseTileHover.X, MouseHelper.MouseTileHover.Y];
+					if (canInteractTile)
+					{
+						if (inventory[itemSlot] != null && focusTile.floorItem != null && inventory[itemSlot].itemID == focusTile.floorItem.itemID)
+						{
+							MouseText = "Right click to take " + focusTile.floorItem.GetName() + "/Click to drop " + inventory[itemSlot].GetName();
 
-					inventory[itemSlot] = tile.TakeItem();
+							if (MouseHelper.Pressed(MouseButton.Left))
+							{
+								Item.MergeStacks(ref focusTile.floorItem, ref inventory[itemSlot]);
+							}
+							if (MouseHelper.Pressed(MouseButton.Right))
+							{
+								Item.MergeStacks(ref inventory[itemSlot], ref focusTile.floorItem);
+							}
+						}
+						else
+						{
+							if (inventory[itemSlot] != null)
+							{
+								MouseText = "Click to drop " + inventory[itemSlot].GetName();
+								if (MouseHelper.Pressed(MouseButton.Left))
+									focusTile.PlaceItem(ref inventory[itemSlot]);
+							}
+							if (inventory[itemSlot] == null && focusTile.floorItem != null)
+							{
+								MouseText = "Right click to take " + focusTile.floorItem.GetName();
+								if (MouseHelper.Pressed(MouseButton.Right))
+									inventory[itemSlot] = focusTile.TakeItem();
+							}
+						}
+					}
+					else
+					{
+						MouseText = "Cannot reach";
+					}
 				}
 			}
 			else
 			{
+				if (focusTile.floorObjectType == FloorObjectType.Tree && HeldItem != null && HeldItem.itemID == ItemType.Axe)
+				{
+					if (canInteractTile)
+					{
+						MouseText = "Click to chop tree";
+						if (MouseHelper.Pressed(MouseButton.Left))
+							focusTile.Damage(MouseHelper.MouseTileHover);
+					}
+					else
+					{
+						MouseText = "Cannot reach";
+					}
+				}
+					
+
+
+
+
 				if (MouseHelper.Pressed(MouseButton.Right) && inventory[0].CanUseItem())
 				{
 					inventory[0].UseItem();
@@ -157,33 +221,6 @@ namespace Imaginosia.Gameplay
 			{
 				invFrames--;
 			}
-
-			if (HeldItem == null || HeldItem.CanUseItem())
-			{
-				// FloorItem toPick = null;
-				// foreach (FloorItem item in Game1.gameState.items)
-				// {
-				// 	if (Vector2.Distance(item.GetFoot(), GetFoot()) < 40)
-				// 	{
-				// 		toPick = item;
-				// 		break;
-				// 	}
-				// }
-				// if (toPick != null)
-				// {
-				// 	toPick.lightUp = true;
-				// 	if (Keybinds.PickUpItem(controller, gamepadNumber))
-				// 	{
-				// 		PickUpItem(toPick.item);
-				// 		Game1.gameState.items.Remove(toPick);
-				// 	}
-				// }
-			}
-
-			// foreach (var item in Game1.gamestate.enemies)
-			// {
-			// 	item.fear += (int)(Math.Min(1 / Vector2.Distance(position, item.position), 1) * noise);
-			// }
 
 			base.Update();
 		}

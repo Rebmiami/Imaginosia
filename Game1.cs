@@ -118,7 +118,14 @@ namespace Imaginosia
 			spriteBatch.LayerEnd();
 
 			spriteBatch.Begin(samplerState: SamplerState.PointClamp);
+
+			if (gamestate.player.MouseText != null)
+			TextPrinter.Print(gamestate.player.MouseText, MouseHelper.Position, spriteBatch, background: true);
+
 			UIHandler.Draw(spriteBatch);
+
+
+
 			spriteBatch.End();
 
 			Rectangle destination = Window.ClientBounds;

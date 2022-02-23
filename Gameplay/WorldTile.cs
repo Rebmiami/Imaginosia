@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -19,6 +20,11 @@ namespace Imaginosia.Gameplay
 
 		public bool PlaceItem(ref Item item)
 		{
+			if (floorObjectType != FloorObjectType.None)
+			{
+				return false;
+			}
+
 			if (floorItem == null)
 			{
 				floorItem = item;
@@ -32,10 +38,30 @@ namespace Imaginosia.Gameplay
 			}
 			else if (floorItem.itemID == item.itemID)
 			{
-				// TODO: Stack the items together
+				Item.MergeStacks(ref floorItem, ref item);
 				return true;
 			}
 			return false;
+		}
+
+		public void Damage(Point point)
+		{
+			if (floorObjectType == FloorObjectType.Tree)
+			{
+				Item wood = new Item();
+				wood.itemID = ItemType.Wood;
+				wood.SetDefaults();
+				wood.stackCount = RNG.rand.Next(3) + 1;
+				Game1.gamestate.world.PlaceItemNearest(point, ref wood);
+
+				floorObjectHealth--;
+			}
+
+
+			if (floorObjectHealth <= 0)
+			{
+				floorObjectType = FloorObjectType.None;
+			}
 		}
 
 		public Item TakeItem()

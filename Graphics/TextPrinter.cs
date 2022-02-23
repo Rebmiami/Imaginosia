@@ -68,8 +68,13 @@ namespace Imaginosia.Graphics
 			characterSheet.frames = newFrame;
 		}
 
-		public static void Print(string text, Vector2 position, SpriteBatcher spriteBatcher, bool center = false)
+		public static void Print(string text, Vector2 position, SpriteBatcher spriteBatcher, bool center = false, bool background = false)
 		{
+			position.Floor();
+
+			Rectangle bounds = new Rectangle(position.ToPoint(), new Point(0, 8));
+			bounds.Y--;
+
 			int xOffset = 0;
 			if (center)
 			{
@@ -81,9 +86,17 @@ namespace Imaginosia.Graphics
 			}
 			foreach (char character in text)
 			{
+				bounds.X = (int)(position.X + xOffset) - 1;
+				bounds.Width = characterSheet.frames[character - 32].Width + 1;
+				if (background)
+				{
+					spriteBatcher.Draw(Assets.Tex["special"], bounds, Color.Black);
+				}
+
 				spriteBatcher.Draw(characterSheet.texture, position + new Vector2(xOffset, 0), characterSheet.frames[character - ' '], Color.White);
 				xOffset += characterSheet.frames[character - 32].Width;
 			}
+			bounds.Width = xOffset;
 			// TODO: Option to center text
 		}
 	}

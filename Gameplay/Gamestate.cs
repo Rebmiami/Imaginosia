@@ -84,7 +84,7 @@ namespace Imaginosia.Gameplay
 			spriteBatcher.Begin(samplerState: SamplerState.PointClamp);
 			player.Draw(spriteBatcher);
 
-			bool debug = true;
+			bool debug = false;
 
 			if (debug)
 				HitboxVisualization.DrawEntityHitbox(player, spriteBatcher);

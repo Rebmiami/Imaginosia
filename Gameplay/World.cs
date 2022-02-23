@@ -36,8 +36,15 @@ namespace Imaginosia.Gameplay
 
 				world.tiles[x, y] = new WorldTile
 				{
-					sprite = Math.Clamp(colors[i].R / 50, 0, 4) + RNG.rand.Next(2) * 5
+					sprite = Math.Clamp(colors[i].R / 50, 0, 4) + RNG.rand.Next(2) * 5,
+					floorObjectStyle = RNG.rand.Next(4),
 				};
+
+				if (RNG.rand.NextDouble() * 50 < world.tiles[x, y].sprite % 5)
+				{
+					world.tiles[x, y].floorObjectType = FloorObjectType.Tree;
+					world.tiles[x, y].floorObjectHealth = 3;
+				}
 			}
 
 			return world;
@@ -57,6 +64,40 @@ namespace Imaginosia.Gameplay
 					if (tile.floorItem != null)
 					{
 						tile.floorItem.Draw(PositionHelper.ToScreenPosition(new Vector2(i, j - 1)), spriteBatcher);
+					}
+					
+
+					if (tile.floorObjectType != FloorObjectType.None)
+					{
+						int floorObjectOffset = 0;
+						int floorObjectSize = 0;
+
+						switch (tile.floorObjectType)
+						{
+							case FloorObjectType.None:
+								break;
+							case FloorObjectType.Tree:
+								floorObjectOffset = 10;
+								floorObjectSize = 3;
+								break;
+							case FloorObjectType.Campfire:
+								break;
+							case FloorObjectType.Fence:
+								floorObjectOffset = 30;
+								floorObjectSize = 2;
+								break;
+							case FloorObjectType.BoneTrap:
+								floorObjectOffset = 22;
+								floorObjectSize = 2;
+								break;
+							default:
+								break;
+						}
+
+						Rectangle box = groundTex.frames[floorObjectOffset + floorObjectSize * tile.floorObjectStyle];
+						box.Height *= floorObjectSize;
+						spriteBatcher.Draw(groundTex.texture, PositionHelper.ToScreenPosition(new Vector2(i, j - floorObjectSize + 1)), box, Color.White);
+
 					}
 				}
 			}
@@ -121,6 +162,31 @@ namespace Imaginosia.Gameplay
 			).ToArray();
 
 			noiseTexture.SetData(colors);
+		}
+
+		public void PlaceItemNearest(Point point, ref Item item)
+		{
+			Rectangle range = new Rectangle(point - new Point(5), new Point(10));
+			range = Rectangle.Intersect(range, new Rectangle(0, 0, WorldHeight - 1, WorldWidth - 1));
+
+			float distance = 10000f;
+			Point closest = Point.Zero;
+
+			for (int i = range.Left; i < range.Right; i++)
+			{
+				for (int j = range.Top; j < range.Bottom; j++)
+				{
+					WorldTile tile = tiles[i, j];
+
+					if (tile.floorItem == null && tile.floorObjectType == FloorObjectType.None && distance > Vector2.Distance(point.ToVector2(), new Vector2(i, j)))
+					{
+						distance = Vector2.Distance(point.ToVector2(), new Vector2(i, j));
+						closest = new Point(i, j);
+					}
+				}
+			}
+
+			tiles[closest.X, closest.Y].PlaceItem(ref item);
 		}
 	}
 }

@@ -40,16 +40,32 @@ namespace Imaginosia.Graphics
 			spriteBatcher.Draw(Assets.Tex2["hudBars"].texture, hudBarOrigin + new Vector2(0, 8), bar2Rect, Color.White);
 
 			// Draw inventory
-			for (int i = 0; i < player.inventory.Length; i++)
+			for (int i = 0; i < player.inventory.Length - (player.equippedBag ? 0 : 2); i++)
 			{
-				Vector2 position = new Vector2(10, 140);
+				Vector2 position = new Vector2(10, 220);
 				position += new Vector2(18, 0) * i;
 				if (i == player.itemSlot)
 					position += new Vector2(0, -10);
+
+				if (i > 3)
+					position += new Vector2(120, 0);
+
 				spriteBatcher.Draw(Assets.Tex2["inventory"].texture, position, Assets.Tex2["inventory"].frames[0], Color.White);
+				
+				
 				if (player.inventory[i] == null)
 					continue;
 				player.inventory[i].Draw(position, spriteBatcher);
+
+
+				if (!player.inventory[i].CanUseItem())
+				{
+					Rectangle reuseShade = Assets.Tex2["inventory"].frames[3];
+					reuseShade.Height = (int)(reuseShade.Height * (float)player.inventory[i].useTime / player.inventory[i].useCooldown);
+
+					spriteBatcher.Draw(Assets.Tex2["inventory"].texture, position, reuseShade, new Color(255, 255, 255, 0));
+
+				}
 			}
 
 			// Draw gun name and reloading text/ammo counter

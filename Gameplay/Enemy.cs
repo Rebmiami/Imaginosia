@@ -112,7 +112,15 @@ namespace Imaginosia.Gameplay
 
 				alertness = Math.Clamp((int)(alertness * 0.99f), 0, 1000);
 
-				fear = Math.Clamp((int)(fear * 0.99f), 0, 1000);
+				if (state == EnemyState.Flee)
+				{
+					// Fleeing enemies should stay afraid for longer
+					fear = Math.Clamp(fear - 1, 0, 1000);
+				}
+				else
+				{
+					fear = Math.Clamp((int)(fear * 0.99f), 0, 1000);
+				}
 
 
 				EnemyState actingState = state;
@@ -186,6 +194,7 @@ namespace Imaginosia.Gameplay
 						if (fear > drive * 4)
 						{
 							state = EnemyState.Flee;
+							GetNewInterest();
 							direction *= -1;
 							attention = RNG.rand.Next(60) + 360;
 						}
