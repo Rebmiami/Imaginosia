@@ -132,11 +132,7 @@ namespace Imaginosia.Gameplay
 
 			if (KeyHelper.Down(Keys.LeftShift) || KeyHelper.Down(Keys.RightShift))
 			{
-				if (itemSlot <= 3)
-				{
-					MouseText = "Cannot drop this item";
-				}
-				else
+				
 				{
 					if (canInteractTile)
 					{
@@ -156,18 +152,39 @@ namespace Imaginosia.Gameplay
 						}
 						else
 						{
-							if (inventory[itemSlot] != null)
+							int firstOpenSlot = 3;
+							for (int i = firstOpenSlot; i < inventory.Length; i++)
 							{
-								MouseText = "Click to drop " + inventory[itemSlot].GetName();
-								if (MouseHelper.Pressed(MouseButton.Left))
-									focusTile.PlaceItem(ref inventory[itemSlot]);
-								goto SingleAction;
+								if (inventory[i] == null || (focusTile.floorItem != null && inventory[i].itemID == focusTile.floorItem.itemID))
+								{
+									break;
+								}
+								else
+								{
+									firstOpenSlot++;
+								}
 							}
-							if (inventory[itemSlot] == null && focusTile.floorItem != null)
+
+							if (focusTile.floorItem != null && firstOpenSlot < inventory.Length)
 							{
 								MouseText = "Right click to take " + focusTile.floorItem.GetName();
 								if (MouseHelper.Pressed(MouseButton.Right))
-									inventory[itemSlot] = focusTile.TakeItem();
+								{
+									Item.MergeStacks(ref inventory[firstOpenSlot], ref focusTile.floorItem);
+								}
+								goto SingleAction;
+							}
+							if (inventory[itemSlot] != null)
+							{
+								if (itemSlot <= 3)
+								{
+									MouseText = "Cannot drop this item";
+									goto SingleAction;
+								}
+
+								MouseText = "Click to drop " + inventory[itemSlot].GetName();
+								if (MouseHelper.Pressed(MouseButton.Left))
+									focusTile.PlaceItem(ref inventory[itemSlot]);
 								goto SingleAction;
 							}
 						}

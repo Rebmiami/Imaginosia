@@ -37,6 +37,7 @@ namespace Imaginosia.Gameplay
 		public Vector2 direction = Vector2.UnitX;
 
 		public bool spotted;
+		public int spotTimer;
 
 		public virtual void Spawn(Vector2 position, int type)
 		{
@@ -46,6 +47,7 @@ namespace Imaginosia.Gameplay
 			this.position = position - (GetFoot() - position);
 			fear = 0;
 			despawnTimer = 900;
+			spotTimer = 40;
 
 			SetDefaults();
 		}
@@ -84,7 +86,10 @@ namespace Imaginosia.Gameplay
 			// - Shining the flashlight
 
 			// Calculate fear and alertness changes:
-
+			if (spotted && spotTimer > 0)
+			{
+				spotTimer--;
+			}
 
 			EnemyState actingState = state;
 
@@ -95,7 +100,7 @@ namespace Imaginosia.Gameplay
 
 			float playerDistance = Vector2.Distance(position, Game1.gamestate.player.position);
 
-			if (playerDistance < 4)
+			if (playerDistance < 6)
 			{
 				spotted = true;
 			}
@@ -275,17 +280,17 @@ namespace Imaginosia.Gameplay
 							break;
 						case EnemyState.Wander:
 							velocity = direction * speed * 0.5f;
-							if (attention == 0)
-							{
-								direction = MathTools.RotateVector(Vector2.UnitX, RNG.rand.NextDouble() * MathHelper.TwoPi);
-								attention = RNG.rand.Next(300) + 60;
-							}
-							if (playerDistance < 10)
-							{
+							// if (attention == 0)
+							// {
+							// 	direction = MathTools.RotateVector(Vector2.UnitX, RNG.rand.NextDouble() * MathHelper.TwoPi);
+							// 	attention = RNG.rand.Next(300) + 60;
+							// }
+							// if (playerDistance < 20)
+							// {
 								GetNewInterest();
 								state = EnemyState.Attack;
 								attention = RNG.rand.Next(60) + 60;
-							}
+							// }
 
 							break;
 						case EnemyState.Sneak:
@@ -432,6 +437,15 @@ namespace Imaginosia.Gameplay
 				return;
 			}
 
+			Color color;
+
+			color = Color.Lerp(Color.White, Color.Black, spotTimer / 40f);
+			if (ImaginationHandler.IsImagination)
+			{
+				color = Color.Lerp(color, Color.Transparent, spotTimer / 40f);
+			}
+
+
 			SlicedSprite texture;
 
 			if (ImaginationHandler.IsImagination)
@@ -456,7 +470,7 @@ namespace Imaginosia.Gameplay
 			}
 
 
-			spriteBatcher.Draw(texture.texture, ScreenPosition - new Vector2(8, 16), texture.frames[animFrame], Color.White, 0, dimensions / 2, 1, direction.X > 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
+			spriteBatcher.Draw(texture.texture, ScreenPosition - new Vector2(8, 16), texture.frames[animFrame], color, 0, dimensions / 2, 1, direction.X > 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
 		}
 	}
 }
