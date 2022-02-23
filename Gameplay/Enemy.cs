@@ -36,6 +36,8 @@ namespace Imaginosia.Gameplay
 
 		public Vector2 direction = Vector2.UnitX;
 
+		public bool spotted;
+
 		public virtual void Spawn(Vector2 position, int type)
 		{
 			this.type = type;
@@ -84,166 +86,233 @@ namespace Imaginosia.Gameplay
 			// Calculate fear and alertness changes:
 
 
-			
+			EnemyState actingState = state;
+
+			if (ImaginationHandler.IsImagination && type != 2)
+			{
+				actingState = EnemyState.Wander;
+			}
+
+			float playerDistance = Vector2.Distance(position, Game1.gamestate.player.position);
+
+			if (playerDistance < 4)
+			{
+				spotted = true;
+			}
+
 
 			float speed = 0.1f;
 
 			if (!dead && hitTimer == 0)
 			{
-				float playerDistance = Vector2.Distance(position, Game1.gamestate.player.position);
-
-				alertness += (int)(Math.Min(1 / playerDistance, 1) * Game1.gamestate.player.noise * 4);
-				fear += (int)(Math.Min(1 / playerDistance, 1) * Game1.gamestate.player.noise * (5f / health));
-
-				float velocityDot = Vector2.Dot(Vector2.Normalize(Game1.gamestate.player.velocity), Vector2.Normalize(ScreenPosition - Game1.gamestate.player.ScreenPosition));
-
-				float flashlightDot = Vector2.Dot(Game1.gamestate.player.direction, Vector2.Normalize(ScreenPosition - Game1.gamestate.player.ScreenPosition));
-
-				if (flashlightDot > 0.95f - Game1.gamestate.player.directionChange * 0.1f)
+				if (!ImaginationHandler.IsImagination)
 				{
-					alertness += (int)((10 + Game1.gamestate.player.directionChange * 10) * (1 / (playerDistance * 0.1f)));
-					fear += (int)(Game1.gamestate.player.directionChange * 500 * (1 / (playerDistance * 0.1f)) * (5f / health));
-				}
 
-				alertness += (int)(1 / (playerDistance / 5));
+					alertness += (int)(Math.Min(1 / playerDistance, 1) * Game1.gamestate.player.noise * 4);
+					fear += (int)(Math.Min(1 / playerDistance, 1) * Game1.gamestate.player.noise * (5f / health));
 
-				if (velocityDot > 0)
-					fear += (int)(velocityDot * 100 * Game1.gamestate.player.velocity.Length() * (alertness / 500f) * (1 / playerDistance) * (5f / health));
+					float velocityDot = Vector2.Dot(Vector2.Normalize(Game1.gamestate.player.velocity), Vector2.Normalize(ScreenPosition - Game1.gamestate.player.ScreenPosition));
 
-				alertness = Math.Clamp((int)(alertness * 0.99f), 0, 1000);
+					float flashlightDot = Vector2.Dot(Game1.gamestate.player.direction, Vector2.Normalize(ScreenPosition - Game1.gamestate.player.ScreenPosition));
 
-				if (state == EnemyState.Flee)
-				{
-					// Fleeing enemies should stay afraid for longer
-					fear = Math.Clamp(fear - 1, 0, 1000);
-				}
-				else
-				{
-					fear = Math.Clamp((int)(fear * 0.99f), 0, 1000);
-				}
+					if (flashlightDot > 0.95f - Game1.gamestate.player.directionChange * 0.1f)
+					{
+						spotted = true;
+						alertness += (int)((10 + Game1.gamestate.player.directionChange * 10) * (1 / (playerDistance * 0.1f)));
+						fear += (int)(Game1.gamestate.player.directionChange * 500 * (1 / (playerDistance * 0.1f)) * (5f / health));
+					}
 
+					alertness += (int)(1 / (playerDistance / 5));
 
-				EnemyState actingState = state;
+					if (velocityDot > 0)
+						fear += (int)(velocityDot * 100 * Game1.gamestate.player.velocity.Length() * (alertness / 500f) * (1 / playerDistance) * (5f / health));
 
-				if (ImaginationHandler.IsImagination && type != 2)
-				{
-					actingState = EnemyState.Wander;
-				}
+					alertness = Math.Clamp((int)(alertness * 0.99f), 0, 1000);
 
-				switch (actingState)
-				{
-					case EnemyState.Sleep:
-						if (alertness > 1000)
-						{
-							state = EnemyState.Attack;
-						}
-
-						break;
-					case EnemyState.Wander:
-						velocity = direction * speed * 0.5f;
-						if (attention == 0)
-						{
-							direction = MathTools.RotateVector(Vector2.UnitX, RNG.rand.NextDouble() * MathHelper.TwoPi);
-							attention = RNG.rand.Next(300) + 60;
-						}
-						if (alertness > 200)
-						{
-							GetNewInterest();
-							state = EnemyState.Sneak;
-							attention = RNG.rand.Next(60) + 60;
-						}
-
-						break;
-					case EnemyState.Sneak:
-						velocity = direction * speed * 0.3f;
-						if (Vector2.Distance(position, interest) < 8 || alertness > 1000 - drive * 2)
-						{
-							GetNewInterest();
-							state = EnemyState.Attack;
-						}
-
-						if (fear > drive * 5)
-						{
-							state = EnemyState.Flee;
-							direction *= -1;
-							attention = RNG.rand.Next(60) + 360;
-						}
-
-						if (attention == 0)
-						{
-							GetNewInterest();
-							attention = RNG.rand.Next(60) + 60;
-						}
-
-						if (drive + alertness < 50)
-						{
-							state = EnemyState.Wander;
-						}
+					if (state == EnemyState.Flee)
+					{
+						// Fleeing enemies should stay afraid for longer
+						fear = Math.Clamp(fear - 1, 0, 1000);
+					}
+					else
+					{
+						fear = Math.Clamp((int)(fear * 0.99f), 0, 1000);
+					}
 
 
-						if (RNG.rand.Next(60) == 1)
-						{
-							drive--;
-						}
 
-						break;
-
-					case EnemyState.Attack:
-						velocity = direction * speed;
-
-						if (fear > drive * 4)
-						{
-							state = EnemyState.Flee;
-							GetNewInterest();
-							direction *= -1;
-							attention = RNG.rand.Next(60) + 360;
-						}
-
-						if (attention == 0)
-						{
-							GetNewInterest();
-							attention = RNG.rand.Next(60) + 60;
-						}
-
-						if (RNG.rand.Next(30) == 1)
-						{
-							drive--;
-						}
-
-
-						break;
-
-					case EnemyState.Flee:
-						velocity = direction * speed * 1.5f;
-
-						if (fear < 100)
-						{
-							if (type == 2)
+					switch (actingState)
+					{
+						case EnemyState.Sleep:
+							if (alertness > 800)
 							{
-								state = EnemyState.Sleep;
+								state = EnemyState.Attack;
 							}
-							else
+
+							break;
+						case EnemyState.Wander:
+							velocity = direction * speed * 0.5f;
+							if (attention == 0)
+							{
+								direction = MathTools.RotateVector(Vector2.UnitX, RNG.rand.NextDouble() * MathHelper.TwoPi);
+								attention = RNG.rand.Next(300) + 60;
+							}
+							if (alertness > 200)
+							{
+								GetNewInterest();
+								state = EnemyState.Sneak;
+								attention = RNG.rand.Next(60) + 60;
+							}
+
+							break;
+						case EnemyState.Sneak:
+							velocity = direction * speed * 0.3f;
+							if (Vector2.Distance(position, interest) < 8 || alertness > 1000 - drive * 2)
+							{
+								GetNewInterest();
+								state = EnemyState.Attack;
+							}
+
+							if (fear > drive * 5)
+							{
+								state = EnemyState.Flee;
+								direction *= -1;
+								attention = RNG.rand.Next(60) + 30;
+							}
+
+							if (attention == 0)
+							{
+								GetNewInterest();
+								attention = RNG.rand.Next(60) + 60;
+							}
+
+							if (drive + alertness < 50)
 							{
 								state = EnemyState.Wander;
 							}
-						}
 
-						if (attention == 0 && alertness > 200 || velocityDot > 0)
-						{
+
+							if (RNG.rand.Next(60) == 1)
+							{
+								drive--;
+							}
+
+							break;
+
+						case EnemyState.Attack:
+							velocity = direction * speed;
+
+							if (fear > drive * 4)
+							{
+								state = EnemyState.Flee;
+								GetNewInterest();
+								direction *= -1;
+								attention = RNG.rand.Next(60) + 30;
+							}
+
+							if (attention == 0)
+							{
+								GetNewInterest();
+								attention = RNG.rand.Next(60) + 60;
+							}
+
+							if (RNG.rand.Next(30) == 1)
+							{
+								drive--;
+							}
+
+
+							break;
+
+						case EnemyState.Flee:
+							velocity = direction * speed * 1.5f;
+
+							if (fear < 100)
+							{
+								if (type == 2)
+								{
+									state = EnemyState.Sleep;
+								}
+								else
+								{
+									state = EnemyState.Wander;
+								}
+							}
+
+							if (attention == 0 && alertness > 200)
+							{
+								GetNewInterest();
+								direction *= -1;
+								attention = RNG.rand.Next(60) + 60;
+							}
+
+							if (velocityDot > 0)
+							{
+								attention--;
+							}
+
+							if (RNG.rand.Next(15) == 1)
+							{
+								drive--;
+							}
+
+							break;
+
+						default:
+							break;
+					}
+				}
+				else
+				{
+					switch (state)
+					{
+						case EnemyState.Sleep:
+							if (playerDistance < 8)
+							{
+								state = EnemyState.Attack;
+							}
+
+							break;
+						case EnemyState.Wander:
+							velocity = direction * speed * 0.5f;
+							if (attention == 0)
+							{
+								direction = MathTools.RotateVector(Vector2.UnitX, RNG.rand.NextDouble() * MathHelper.TwoPi);
+								attention = RNG.rand.Next(300) + 60;
+							}
+							if (playerDistance < 10)
+							{
+								GetNewInterest();
+								state = EnemyState.Attack;
+								attention = RNG.rand.Next(60) + 60;
+							}
+
+							break;
+						case EnemyState.Sneak:
 							GetNewInterest();
-							direction *= -1;
-							attention = RNG.rand.Next(60) + 60;
-						}
+							state = EnemyState.Attack;
 
-						if (RNG.rand.Next(15) == 1)
-						{
-							drive--;
-						}
+							break;
 
-						break;
+						case EnemyState.Attack:
+							velocity = direction * speed;
 
-					default:
-						break;
+							break;
+
+						case EnemyState.Flee:
+							GetNewInterest();
+							state = EnemyState.Attack;
+							break;
+
+						default:
+							break;
+					}
+
+					if (attention == 0)
+					{
+						GetNewInterest();
+						attention = RNG.rand.Next(60) + 60;
+					}
 				}
 			}
 
@@ -252,20 +321,30 @@ namespace Imaginosia.Gameplay
 				attention--;
 			}
 
-			if (state != EnemyState.Sleep)
+			if (dead)
 			{
-				animationTimer++;
-
-				animFrame = animationTimer / 10 % 2 + 1;
-
-				if (direction.Y < 0)
+				if (animationTimer > 0)
 				{
-					animFrame += 2;
+					animationTimer--;
 				}
 			}
 			else
 			{
-				animFrame = 0;
+				if (state != EnemyState.Sleep)
+				{
+					animationTimer++;
+
+					animFrame = animationTimer / 10 % 2 + 1;
+
+					if (direction.Y < 0)
+					{
+						animFrame += 2;
+					}
+				}
+				else
+				{
+					animFrame = 0;
+				}
 			}
 
 			velocity *= 0.8f;
@@ -300,8 +379,16 @@ namespace Imaginosia.Gameplay
 
 		public void GetNewInterest()
 		{
-			interest = Game1.gamestate.player.position + MathTools.RotateVector(Vector2.UnitX * (1 - alertness) * 0.02f, RNG.rand.NextDouble() * MathHelper.TwoPi);
-			direction = Vector2.Normalize(interest - Center);
+			if (ImaginationHandler.IsImagination)
+			{
+				interest = Game1.gamestate.player.position + MathTools.RotateVector(Vector2.UnitX * 1, RNG.rand.NextDouble() * MathHelper.TwoPi);
+				direction = Vector2.Normalize(interest - Center);
+			}
+			else
+			{
+				interest = Game1.gamestate.player.position + MathTools.RotateVector(Vector2.UnitX * (1 - alertness) * 0.005f, RNG.rand.NextDouble() * MathHelper.TwoPi);
+				direction = Vector2.Normalize(interest - Center);
+			}
 		}
 
 		public virtual void TakeDamage(int damage, Vector2 knockback)
@@ -312,6 +399,7 @@ namespace Imaginosia.Gameplay
 			if (health < maxHealth)
 			{
 				dead = true;
+				animationTimer = 60;
 			}
 		}
 
@@ -322,12 +410,28 @@ namespace Imaginosia.Gameplay
 			{
 				WorldTile toSniff = Game1.gamestate.world.tiles[(int)sniffTarget.X, (int)sniffTarget.Y];
 
+				if (toSniff.floorItem !=null)
+				{
+					Item item = toSniff.floorItem;
 
+
+
+				}
 			}
 		}
 
 		public override void Draw(SpriteBatcher spriteBatcher)
 		{
+			if (ImaginationHandler.IsImagination && dead && animationTimer == 0)
+			{
+				return;
+			}
+
+			if (ImaginationHandler.IsImagination && !spotted)
+			{
+				return;
+			}
+
 			SlicedSprite texture;
 
 			if (ImaginationHandler.IsImagination)

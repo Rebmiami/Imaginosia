@@ -152,6 +152,7 @@ namespace Imaginosia.Gameplay
 							{
 								Item.MergeStacks(ref inventory[itemSlot], ref focusTile.floorItem);
 							}
+							goto SingleAction;
 						}
 						else
 						{
@@ -160,35 +161,141 @@ namespace Imaginosia.Gameplay
 								MouseText = "Click to drop " + inventory[itemSlot].GetName();
 								if (MouseHelper.Pressed(MouseButton.Left))
 									focusTile.PlaceItem(ref inventory[itemSlot]);
+								goto SingleAction;
 							}
 							if (inventory[itemSlot] == null && focusTile.floorItem != null)
 							{
 								MouseText = "Right click to take " + focusTile.floorItem.GetName();
 								if (MouseHelper.Pressed(MouseButton.Right))
 									inventory[itemSlot] = focusTile.TakeItem();
+								goto SingleAction;
 							}
 						}
 					}
 					else
 					{
 						MouseText = "Cannot reach";
+						goto SingleAction;
 					}
 				}
 			}
 			else
 			{
-				if (focusTile.floorObjectType == FloorObjectType.Tree && HeldItem != null && HeldItem.itemID == ItemType.Axe)
+				if (HeldItem != null && HeldItem.itemID == ItemType.Knife && canInteractTile && HeldItem.CanUseItem())
+				{
+
+					Enemy toScavenge = null;
+					foreach (var item in Game1.gamestate.enemies)
+					{
+						if (item.dead && item.Hitbox.Contains(PositionHelper.ToGamePosition(MouseHelper.Position)))
+						{
+							toScavenge = item;
+						}
+					}
+
+					if (toScavenge != null)
+					{
+						MouseText = "Click to scavenge";
+						if (MouseHelper.Pressed(MouseButton.Left))
+						{
+							HeldItem.UseItem();
+							toScavenge.remove = true;
+							Game1.gamestate.world.PlaceItemNearest(toScavenge.Center.ToPoint(), ref toScavenge.carryingItem);
+
+							List<Item> potentialDrops = new List<Item>();
+
+							int items = 0;
+
+							if (toScavenge.type == 0)
+							{
+								Item item1 = new Item();
+								item1.itemID = ItemType.MeatRaw;
+								item1.SetDefaults();
+								item1.stackCount = RNG.rand.Next(2) + 1;
+
+								Item item2 = new Item();
+								item2.itemID = ItemType.Fur;
+								item2.SetDefaults();
+								item2.stackCount = RNG.rand.Next(2) + 1;
+
+								Item item3 = new Item();
+								item3.itemID = ItemType.Bone;
+								item3.SetDefaults();
+								item3.stackCount = RNG.rand.Next(2) + 1;
+
+								potentialDrops = new List<Item> { item1, item2, item3 };
+								items = 2;
+							}
+							if (toScavenge.type == 1)
+							{
+								Item item1 = new Item();
+								item1.itemID = ItemType.MeatRaw;
+								item1.SetDefaults();
+								item1.stackCount = 1;
+
+								Item item2 = new Item();
+								item2.itemID = ItemType.Fur;
+								item2.SetDefaults();
+								item2.stackCount = 1;
+
+								Item item3 = new Item();
+								item3.itemID = ItemType.Bone;
+								item3.SetDefaults();
+								item3.stackCount = 1;
+
+								potentialDrops = new List<Item> { item1, item2, item3 };
+								items = 1;
+							}
+							if (toScavenge.type == 2)
+							{
+								Item item1 = new Item();
+								item1.itemID = ItemType.MeatRaw;
+								item1.SetDefaults();
+								item1.stackCount = RNG.rand.Next(3) + 2;
+
+								Item item2 = new Item();
+								item2.itemID = ItemType.Fur;
+								item2.SetDefaults();
+								item2.stackCount = RNG.rand.Next(3) + 2;
+
+								Item item3 = new Item();
+								item3.itemID = ItemType.Bone;
+								item3.SetDefaults();
+								item3.stackCount = RNG.rand.Next(3) + 2;
+
+								potentialDrops = new List<Item> { item1, item2, item3 };
+								items = 3;
+							}
+
+							for (int i = 0; i < items; i++)
+							{
+								int j = RNG.rand.Next(potentialDrops.Count);
+
+								Item toDrop = potentialDrops[j];
+								Game1.gamestate.world.PlaceItemNearest(toScavenge.Center.ToPoint(), ref toDrop);
+								potentialDrops.RemoveAt(j);
+							}
+						}
+						goto SingleAction;
+					}
+				}
+
+				if (focusTile.floorObjectType == FloorObjectType.Tree && HeldItem != null && HeldItem.itemID == ItemType.Axe && HeldItem.CanUseItem())
 				{
 					if (canInteractTile)
 					{
 						MouseText = "Click to chop tree";
 						if (MouseHelper.Pressed(MouseButton.Left))
+						{
+							HeldItem.UseItem();
 							focusTile.Damage(MouseHelper.MouseTileHover);
+						}
 					}
 					else
 					{
 						MouseText = "Cannot reach";
 					}
+					goto SingleAction;
 				}
 					
 
@@ -207,7 +314,7 @@ namespace Imaginosia.Gameplay
 					};
 				}
 			}
-
+			SingleAction:
 
 			if (HeldItem != null && HeldItem.CanUseItem())
 			{

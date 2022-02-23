@@ -16,6 +16,7 @@ namespace Imaginosia.Gameplay
 		public int usesLeft;
 
 		public bool stackable;
+		public bool multiUse;
 		public int maxStack;
 		public bool consumable;
 
@@ -30,18 +31,34 @@ namespace Imaginosia.Gameplay
 					useCooldown = 10;
 					stackable = false;
 					consumable = false;
+					multiUse = true;
 					break;
 				case ItemType.Knife:
+					useCooldown = 20;
+					stackable = false;
+					consumable = false;
 					break;
 				case ItemType.Axe:
+					useCooldown = 20;
+					stackable = false;
+					consumable = false;
+					break;
+				case ItemType.Matchbox:
+					usesLeft = 10;
+					useCooldown = 10;
+					stackable = false;
+					consumable = false;
+					multiUse = true;
 					break;
 				case ItemType.MeatRaw:
 					stackable = true;
 					consumable = true;
+					maxStack = 15;
 					break;
 				case ItemType.MeatCooked:
 					stackable = true;
 					consumable = true;
+					maxStack = 15;
 					break;
 				case ItemType.Fur:
 					stackable = true;
@@ -76,13 +93,18 @@ namespace Imaginosia.Gameplay
 
 		public virtual bool CanUseItem()
 		{
+			if (multiUse && usesLeft <= 0)
+			{
+				return false;
+			}
+
 			return useTime == 0;
 		}
 
 		public virtual bool UseItem()
 		{
 			useTime = useCooldown;
-			if (usesLeft > 0)
+			if (multiUse)
 			{
 				usesLeft--;
 				if (usesLeft <= 0 && consumable)

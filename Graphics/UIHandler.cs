@@ -64,16 +64,30 @@ namespace Imaginosia.Graphics
 					reuseShade.Height = (int)(reuseShade.Height * (float)player.inventory[i].useTime / player.inventory[i].useCooldown);
 
 					spriteBatcher.Draw(Assets.Tex2["inventory"].texture, position, reuseShade, new Color(255, 255, 255, 0));
+				}
 
+				int number = 0;
+
+				if (player.inventory[i].stackable)
+				{
+					number = player.inventory[i].stackCount;
+				}
+
+				if (player.inventory[i].usesLeft > 0)
+				{
+					number = player.inventory[i].usesLeft;
+				}
+
+				if (number > 0)
+				{
+					TextPrinter.Print(number.ToString(), position + new Vector2(1), spriteBatcher);
 				}
 			}
 
-			// Draw gun name and reloading text/ammo counter
 			if (player.HeldItem != null)
 			{
 				string text = player.HeldItem.usesLeft.ToString();
-				TextPrinter.Print(player.HeldItem.GetName(), new Vector2(20, 100), spriteBatcher);
-				TextPrinter.Print(text, new Vector2(20, 120), spriteBatcher);
+				TextPrinter.Print(player.HeldItem.GetName(), new Vector2(20, 150), spriteBatcher);
 			}
 		}
 
