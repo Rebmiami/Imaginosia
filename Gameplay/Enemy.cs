@@ -14,12 +14,12 @@ namespace Imaginosia.Gameplay
 		public int health;
 		public int maxHealth;
 
-		public float fear; // Increased by player actions such as making noise, attacking, or using the flashlight
-		public float fight; // Enemy's desire to fight the player when afraid. Enemies are more likely to fight if they are healthy.
-		public float flight; // Enemy's desire to run away from the player when afraid. Enemies are more likely to flee if hurt or very scared
+		public int alertness; // How aware the enemy is of the player's location
+		public int fear; // Increased by player actions such as making noise, attacking, or using the flashlight
+		public int drive; // How persistent the enemy is
 
 		public Vector2 interest; // The position of the enemy's interest, or what it wants to get. May be the player or an item on the ground
-		public float attention; // How willing the enemy is to follow its interest. It will lose interest if it continually fails
+		public int attention;
 
 		public Item carryingItem;
 
@@ -55,12 +55,18 @@ namespace Imaginosia.Gameplay
 			{
 				case 0:
 					maxHealth = 10;
+					drive = 200;
+					state = EnemyState.Wander;
 					break;
 				case 1:
 					maxHealth = 5;
+					drive = 100;
+					state = EnemyState.Wander;
 					break;
 				case 2:
 					maxHealth = 20;
+					drive = 300;
+					state = EnemyState.Sleep;
 					break;
 				default:
 					break;
@@ -75,18 +81,198 @@ namespace Imaginosia.Gameplay
 			// - Taking damage
 			// - Shining the flashlight
 
-			if (fear > 0)
-				fear -= 0.001f;
+			// Calculate fear and alertness changes:
 
-			if (fear < 0)
-				fear = 0;
+
+			
+
+			float speed = 0.1f;
+
+			if (!dead && hitTimer == 0)
+			{
+				float playerDistance = Vector2.Distance(position, Game1.gamestate.player.position);
+
+				alertness += (int)(Math.Min(1 / playerDistance, 1) * Game1.gamestate.player.noise * 4);
+				fear += (int)(Math.Min(1 / playerDistance, 1) * Game1.gamestate.player.noise * (5f / health));
+
+				float velocityDot = Vector2.Dot(Vector2.Normalize(Game1.gamestate.player.velocity), Vector2.Normalize(ScreenPosition - Game1.gamestate.player.ScreenPosition));
+
+				float flashlightDot = Vector2.Dot(Game1.gamestate.player.direction, Vector2.Normalize(ScreenPosition - Game1.gamestate.player.ScreenPosition));
+
+				if (flashlightDot > 0.95f - Game1.gamestate.player.directionChange * 0.1f)
+				{
+					alertness += (int)((10 + Game1.gamestate.player.directionChange * 10) * (1 / (playerDistance * 0.1f)));
+					fear += (int)(Game1.gamestate.player.directionChange * 500 * (1 / (playerDistance * 0.1f)) * (5f / health));
+				}
+
+				alertness += (int)(1 / (playerDistance / 5));
+
+				if (velocityDot > 0)
+					fear += (int)(velocityDot * 100 * Game1.gamestate.player.velocity.Length() * (alertness / 500f) * (1 / playerDistance) * (5f / health));
+
+				alertness = Math.Clamp((int)(alertness * 0.99f), 0, 1000);
+
+				fear = Math.Clamp((int)(fear * 0.99f), 0, 1000);
+
+
+				EnemyState actingState = state;
+
+				if (ImaginationHandler.IsImagination && type != 2)
+				{
+					actingState = EnemyState.Wander;
+				}
+
+				switch (actingState)
+				{
+					case EnemyState.Sleep:
+						if (alertness > 1000)
+						{
+							state = EnemyState.Attack;
+						}
+
+						break;
+					case EnemyState.Wander:
+						velocity = direction * speed * 0.5f;
+						if (attention == 0)
+						{
+							direction = MathTools.RotateVector(Vector2.UnitX, RNG.rand.NextDouble() * MathHelper.TwoPi);
+							attention = RNG.rand.Next(300) + 60;
+						}
+						if (alertness > 200)
+						{
+							GetNewInterest();
+							state = EnemyState.Sneak;
+							attention = RNG.rand.Next(60) + 60;
+						}
+
+						break;
+					case EnemyState.Sneak:
+						velocity = direction * speed * 0.3f;
+						if (Vector2.Distance(position, interest) < 8 || alertness > 1000 - drive * 2)
+						{
+							GetNewInterest();
+							state = EnemyState.Attack;
+						}
+
+						if (fear > drive * 5)
+						{
+							state = EnemyState.Flee;
+							direction *= -1;
+							attention = RNG.rand.Next(60) + 360;
+						}
+
+						if (attention == 0)
+						{
+							GetNewInterest();
+							attention = RNG.rand.Next(60) + 60;
+						}
+
+						if (drive + alertness < 50)
+						{
+							state = EnemyState.Wander;
+						}
+
+
+						if (RNG.rand.Next(60) == 1)
+						{
+							drive--;
+						}
+
+						break;
+
+					case EnemyState.Attack:
+						velocity = direction * speed;
+
+						if (fear > drive * 4)
+						{
+							state = EnemyState.Flee;
+							direction *= -1;
+							attention = RNG.rand.Next(60) + 360;
+						}
+
+						if (attention == 0)
+						{
+							GetNewInterest();
+							attention = RNG.rand.Next(60) + 60;
+						}
+
+						if (RNG.rand.Next(30) == 1)
+						{
+							drive--;
+						}
+
+
+						break;
+
+					case EnemyState.Flee:
+						velocity = direction * speed * 1.5f;
+
+						if (fear < 100)
+						{
+							if (type == 2)
+							{
+								state = EnemyState.Sleep;
+							}
+							else
+							{
+								state = EnemyState.Wander;
+							}
+						}
+
+						if (attention == 0 && alertness > 200 || velocityDot > 0)
+						{
+							GetNewInterest();
+							direction *= -1;
+							attention = RNG.rand.Next(60) + 60;
+						}
+
+						if (RNG.rand.Next(15) == 1)
+						{
+							drive--;
+						}
+
+						break;
+
+					default:
+						break;
+				}
+			}
+
+			if (attention > 0)
+			{
+				attention--;
+			}
+
+			if (state != EnemyState.Sleep)
+			{
+				animationTimer++;
+
+				animFrame = animationTimer / 10 % 2 + 1;
+
+				if (direction.Y < 0)
+				{
+					animFrame += 2;
+				}
+			}
+			else
+			{
+				animFrame = 0;
+			}
+
+			velocity *= 0.8f;
 
 			if (hitTimer > 0)
 			{
 				hitTimer--;
+				animFrame = 5;
 			}
 
-			if (!dead && Vector2.Distance(position, Game1.gamestate.player.position) < 50)
+			if (dead)
+			{
+				animFrame = 6;
+			}
+
+			if (!dead && Vector2.Distance(position, Game1.gamestate.player.position) < 40)
 			{
 				despawnTimer = 900;
 			}
@@ -100,33 +286,34 @@ namespace Imaginosia.Gameplay
 				}
 			}
 
-			switch (state)
-			{
-				case EnemyState.Sleep:
-					break;
-				case EnemyState.Wander:
-					break;
-				case EnemyState.Sneak:
-					break;
-				case EnemyState.Attack:
-					break;
-				case EnemyState.Flee:
-					break;
-				default:
-					break;
-			}
+			base.Update();
+		}
+
+		public void GetNewInterest()
+		{
+			interest = Game1.gamestate.player.position + MathTools.RotateVector(Vector2.UnitX * (1 - alertness) * 0.02f, RNG.rand.NextDouble() * MathHelper.TwoPi);
+			direction = Vector2.Normalize(interest - Center);
 		}
 
 		public virtual void TakeDamage(int damage, Vector2 knockback)
 		{
+			hitTimer = 6;
 			health -= damage;
 			velocity += knockback;
 			if (health < maxHealth)
 			{
 				dead = true;
-				animFrame = 6;
-				hitTimer = 6;
-				
+			}
+		}
+
+		public void Sniff()
+		{
+			Vector2 sniffTarget = MathTools.RotateVector(new Vector2((float)RNG.rand.NextDouble() * 30), RNG.rand.NextDouble() * MathHelper.TwoPi);
+			if (new Rectangle(0, 0, World.WorldWidth, World.WorldHeight).Contains(sniffTarget))
+			{
+				WorldTile toSniff = Game1.gamestate.world.tiles[(int)sniffTarget.X, (int)sniffTarget.Y];
+
+
 			}
 		}
 
@@ -136,37 +323,23 @@ namespace Imaginosia.Gameplay
 
 			if (ImaginationHandler.IsImagination)
 			{
-				switch (type)
+				texture = type switch
 				{
-					case 0:
-						texture = Assets.Tex2["wolfImaginary"];
-						break;
-					case 1:
-						texture = Assets.Tex2["ratImaginary"];
-						break;
-					case 2:
-						texture = Assets.Tex2["bearImaginary"];
-						break;
-					default:
-						throw new InvalidOperationException("No enemy with this texture");
-				}
+					0 => Assets.Tex2["wolfImaginary"],
+					1 => Assets.Tex2["ratImaginary"],
+					2 => Assets.Tex2["bearImaginary"],
+					_ => throw new InvalidOperationException("No enemy with this texture"),
+				};
 			}
 			else
 			{
-				switch (type)
+				texture = type switch
 				{
-					case 0:
-						texture = Assets.Tex2["wolfReal"];
-						break;
-					case 1:
-						texture = Assets.Tex2["ratReal"];
-						break;
-					case 2:
-						texture = Assets.Tex2["bearReal"];
-						break;
-					default:
-						throw new InvalidOperationException("No enemy with this texture");
-				}
+					0 => Assets.Tex2["wolfReal"],
+					1 => Assets.Tex2["ratReal"],
+					2 => Assets.Tex2["bearReal"],
+					_ => throw new InvalidOperationException("No enemy with this texture"),
+				};
 			}
 
 

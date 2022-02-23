@@ -11,6 +11,10 @@ namespace Imaginosia.Gameplay
 
 		public int sprite;
 
+		public FloorObjectType floorObjectType;
+		public int floorObjectHealth;
+		public int floorObjectStyle;
+
 		public Item floorItem;
 
 		public bool PlaceItem(ref Item item)

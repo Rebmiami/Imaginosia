@@ -34,8 +34,8 @@ namespace Imaginosia
 			base.Initialize();
 		}
 
-		public static int GameWidth = 240;
-		public static int GameHeight = 160;
+		public static int GameWidth = 360;
+		public static int GameHeight = 240;
 
 		public static bool hitboxView = true;
 
@@ -51,11 +51,12 @@ namespace Imaginosia
 			Assets.Tex2["inventory"] = SlicedSprite.Frameify(Content.Load<Texture2D>("InventorySquares"), 1, 1);
 
 			Assets.Tex2["wolfReal"] = SlicedSprite.Frameify(Content.Load<Texture2D>("WolfReal"), 6, 0);
-			// Assets.Tex2["wolfImaginary"] = SlicedSprite.Frameify(Content.Load<Texture2D>("BearImaginary"), 6, 0);
+			Assets.Tex2["wolfImaginary"] = SlicedSprite.Frameify(Content.Load<Texture2D>("WolfImaginary"), 6, 0);
 			Assets.Tex2["ratReal"] = SlicedSprite.Frameify(Content.Load<Texture2D>("RatReal"), 6, 0);
-			// Assets.Tex2["ratImaginary"] = SlicedSprite.Frameify(Content.Load<Texture2D>("BearImaginary"), 6, 0);
+			Assets.Tex2["ratImaginary"] = SlicedSprite.Frameify(Content.Load<Texture2D>("RatImaginary"), 6, 0);
 			Assets.Tex2["bearReal"] = SlicedSprite.Frameify(Content.Load<Texture2D>("BearReal"), 6, 0);
 			Assets.Tex2["bearImaginary"] = SlicedSprite.Frameify(Content.Load<Texture2D>("BearImaginary"), 6, 0);
+			Assets.Tex2["hudBars"] = SlicedSprite.Frameify(Content.Load<Texture2D>("HudBars"), 0, 7);
 
 
 			Assets.Tex["flashlightMask"] = Content.Load<Texture2D>("FlashlightMask");
@@ -102,7 +103,17 @@ namespace Imaginosia
 
 			Assets.Darkness.Parameters["LightMask"].SetValue(spriteBatch.GetLayer("light"));
 
-			spriteBatch.LayerBegin("final", effect: Assets.Darkness);
+			bool alwaysLight = false;
+
+			if (ImaginationHandler.IsImagination || alwaysLight)
+			{
+				spriteBatch.LayerBegin("final");
+			}
+			else
+			{
+				spriteBatch.LayerBegin("final", effect: Assets.Darkness);
+			}
+
 			spriteBatch.DrawLayer("tiles");
 			spriteBatch.LayerEnd();
 

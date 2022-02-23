@@ -20,37 +20,24 @@ namespace Imaginosia.Graphics
 
 		public static void Draw(SpriteBatcher spriteBatcher)
 		{
-			// Draw health bar
-			int heartSlices = (int)player.health;
-			int hearts = player.maxHealth / 2;
-			for (int i = 0; i < hearts; i++)
-			{
-				int frame = 2;
-				if (heartSlices == 1)
-				{
-					frame = 1;
-				}
-				else if (heartSlices > 1)
-				{
-					frame = 0;
-				}
-				// if (hitFlash > 0 && heartSlices == 0 || heartSlices == 1)
-				// {
-				// 	Effect effect = Game1.flash.Clone();
-				// 	effect.Parameters["flash"].SetValue(hitFlash / 5f);
-				// 	Effect[] effects = new Effect[] { effect };
-				// 	DrawHandler.DrawSliced(SlicedSprite.Frameify(heart, 0, 2), frame, new Vector2(120 + 20 * i, 360 - hitFlash), Color.White, shaders: effects);
-				// }
-				// else
-				// {
-				// 	DrawHandler.DrawSliced(SlicedSprite.Frameify(heart, 0, 2), frame, new Vector2(120 + 20 * i, 360), Color.White);
-				// }
-				heartSlices -= 2;
-			}
-			if (hitFlash > 0)
-			{
-				hitFlash--;
-			}
+			// Draw HUD bars
+			float bar1 = player.health / Player.MaxHealth;
+			float bar2 = ImaginationHandler.IsImagination ? player.magic / Player.MaxMagic : player.hunger / Player.MaxHunger;
+
+			Vector2 hudBarOrigin = new Vector2(10, 10);
+
+			int imagination = ImaginationHandler.IsImagination ? 4 : 0;
+
+			Rectangle bar1Rect = Assets.Tex2["hudBars"].frames[1 + imagination];
+			bar1Rect.Width = (int)(bar1Rect.Width * bar1);
+
+			Rectangle bar2Rect = Assets.Tex2["hudBars"].frames[3 + imagination];
+			bar2Rect.Width = (int)(bar2Rect.Width * bar2);
+
+			spriteBatcher.Draw(Assets.Tex2["hudBars"].texture, hudBarOrigin, Assets.Tex2["hudBars"].frames[0 + imagination], Color.White);
+			spriteBatcher.Draw(Assets.Tex2["hudBars"].texture, hudBarOrigin, bar1Rect, Color.White);
+			spriteBatcher.Draw(Assets.Tex2["hudBars"].texture, hudBarOrigin + new Vector2(0, 8), Assets.Tex2["hudBars"].frames[2 + imagination], Color.White);
+			spriteBatcher.Draw(Assets.Tex2["hudBars"].texture, hudBarOrigin + new Vector2(0, 8), bar2Rect, Color.White);
 
 			// Draw inventory
 			for (int i = 0; i < player.inventory.Length; i++)

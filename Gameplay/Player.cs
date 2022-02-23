@@ -23,8 +23,7 @@ namespace Imaginosia.Gameplay
 				item.SetDefaults();
 			}
 
-			health = 10;
-			maxHealth = (int)Math.Ceiling(health);
+			health = MaxHealth;
 		}
 
 		public Item[] inventory = new Item[5];
@@ -41,12 +40,24 @@ namespace Imaginosia.Gameplay
 		}
 
 		public float health;
-		public int maxHealth;
+		public float hunger;
+		public float magic;
+
+		public const int MaxHealth = 10;
+		public const int MaxHunger = 10;
+		public const int MaxMagic = 10;
+
 		public int invFrames;
+
+		public bool equippedBag;
+
+		public int noise;
+
+		public float directionChange;
 
 		public override void Update()
 		{
-			float noise = 1f;
+			noise = 1;
 
 			if (inventory[itemSlot] == null || inventory[itemSlot].useTime == 0)
 			{
@@ -90,10 +101,12 @@ namespace Imaginosia.Gameplay
 			if (velocity.Length() > speed)
 			velocity = Vector2.Normalize(velocity) * speed;
 
-			noise += velocity.Length();
+			noise += (int)(velocity.Length() * 50);
 
+			Vector2 oldDirection = gameDirection;
 			direction = Vector2.Normalize(MouseHelper.Position - ScreenPosition);
 			gameDirection = Vector2.Normalize(PositionHelper.ToGamePosition(direction, true));
+			directionChange = -Vector2.Dot(gameDirection, oldDirection) + 1;
 
 			foreach (Item item in inventory)
 			{
@@ -121,12 +134,12 @@ namespace Imaginosia.Gameplay
 				if (MouseHelper.Pressed(MouseButton.Right) && inventory[0].CanUseItem())
 				{
 					inventory[0].UseItem();
-
+					noise += 1000;
 					new Projectile(position, gameDirection, 10, 0)
 					{
 						updateRes = 4,
 						timeLeft = 16,
-						knockback = 4
+						knockback = 1
 					};
 				}
 			}
@@ -167,10 +180,10 @@ namespace Imaginosia.Gameplay
 				// }
 			}
 
-			foreach (var item in Game1.gamestate.enemies)
-			{
-				item.fear += Math.Min(1 / Vector2.Distance(position, item.position), 1) * noise * 0.01f;
-			}
+			// foreach (var item in Game1.gamestate.enemies)
+			// {
+			// 	item.fear += (int)(Math.Min(1 / Vector2.Distance(position, item.position), 1) * noise);
+			// }
 
 			base.Update();
 		}

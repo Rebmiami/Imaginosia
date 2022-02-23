@@ -17,7 +17,7 @@ namespace Imaginosia.Gameplay
 
 		public Gamestate()
 		{
-			world = World.GenerateSeeded(0);
+			world = World.GenerateNew();
 			player = new Player();
 			enemies = new List<Enemy>();
 			projectiles = new List<Projectile>();
@@ -31,9 +31,12 @@ namespace Imaginosia.Gameplay
 
 		public void Update()
 		{
-			if (RNG.rand.Next(100) == 0)
+			if (RNG.rand.Next(100) == 0 && enemies.Count < 20)
 			{
-				SpawnEnemy(new Vector2((float)RNG.rand.NextDouble() * World.WorldWidth, (float)RNG.rand.NextDouble() * World.WorldHeight), RNG.rand.Next(3));
+				Vector2 spawnPosition = new Vector2((float)RNG.rand.NextDouble() * World.WorldWidth, (float)RNG.rand.NextDouble() * World.WorldHeight);
+
+				if (Vector2.Distance(spawnPosition, player.position) > 30)
+				SpawnEnemy(spawnPosition, RNG.rand.Next(3));
 			}
 
 
@@ -57,6 +60,14 @@ namespace Imaginosia.Gameplay
 				if (obj.kill)
 				{
 					obj.OnKill();
+					return true;
+				}
+				return false;
+			});
+			ListCleaner.CleanList(enemies, delegate (Enemy obj)
+			{
+				if (obj.remove)
+				{
 					return true;
 				}
 				return false;
@@ -86,7 +97,13 @@ namespace Imaginosia.Gameplay
 
 				Vector2 corner = PositionHelper.ToScreenPosition(new Vector2(item.Hitbox.Right, item.Hitbox.Bottom));
 				if (debug)
+				{
 					TextPrinter.Print($"Fear: {item.fear}", corner, spriteBatcher);
+					TextPrinter.Print($"Alert: {item.alertness}", corner + new Vector2(0, 6), spriteBatcher);
+					TextPrinter.Print($"Drive: {item.drive}", corner + new Vector2(0, 12), spriteBatcher);
+					TextPrinter.Print($"Attention: {item.attention}", corner + new Vector2(0, 18), spriteBatcher);
+					TextPrinter.Print($"State: {item.state}", corner + new Vector2(0, 24), spriteBatcher);
+				}
 			}
 
 			foreach (var item in projectiles)

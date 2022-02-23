@@ -17,7 +17,7 @@ namespace Imaginosia.Gameplay
 
 		public WorldTile[,] tiles;
 
-		public static World GenerateSeeded(int seed)
+		public static World GenerateNew()
 		{
 			World world = new World();
 			world.tiles = new WorldTile[WorldWidth, WorldHeight];
@@ -36,7 +36,7 @@ namespace Imaginosia.Gameplay
 
 				world.tiles[x, y] = new WorldTile
 				{
-					sprite = Math.Clamp(colors[i].R / 50, 0, 4)
+					sprite = Math.Clamp(colors[i].R / 50, 0, 4) + RNG.rand.Next(2) * 5
 				};
 			}
 

@@ -55,6 +55,18 @@
 /processorParam:TextureFormat=Color
 /build:FlashlightMask.png
 
+#begin HudBars.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:HudBars.png
+
 #begin InventorySquares.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -103,6 +115,18 @@
 /processorParam:TextureFormat=Color
 /build:ProjectileSprites.png
 
+#begin RatImaginary.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:RatImaginary.png
+
 #begin RatReal.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -150,6 +174,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:TilesetReal.png
+
+#begin WolfImaginary.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:WolfImaginary.png
 
 #begin WolfReal.png
 /importer:TextureImporter
