@@ -39,6 +39,8 @@ namespace Imaginosia.Gameplay
 		public bool spotted;
 		public int spotTimer;
 
+		public int soundTimer;
+
 		public virtual void Spawn(Vector2 position, int type)
 		{
 			this.type = type;
@@ -48,6 +50,7 @@ namespace Imaginosia.Gameplay
 			fear = 0;
 			despawnTimer = 900;
 			spotTimer = 40;
+			soundTimer = 60 + RNG.rand.Next(30);
 
 			SetDefaults();
 		}
@@ -405,6 +408,7 @@ namespace Imaginosia.Gameplay
 			{
 				dead = true;
 				animationTimer = 60;
+				despawnTimer = 3600;
 			}
 		}
 
@@ -420,7 +424,10 @@ namespace Imaginosia.Gameplay
 					Item item = toSniff.floorItem;
 
 
-
+					if (item.itemID == ItemType.MeatRaw || item.itemID == ItemType.MeatCooked || RNG.rand.Next(3) == 0)
+					{
+						interest = sniffTarget;
+					}
 				}
 			}
 		}

@@ -52,7 +52,7 @@ namespace Imaginosia.Gameplay
 
 			foreach (Enemy enemy in Game1.gamestate.enemies)
 			{
-				if (enemy.Hitbox.Intersects(Hitbox))
+				if (!enemy.dead && enemy.Hitbox.Intersects(Hitbox))
 				{
 					OnHitEnemy(enemy);
 					break;

@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Imaginosia.Audio;
+using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -55,12 +56,15 @@ namespace Imaginosia.Gameplay
 				Game1.gamestate.world.PlaceItemNearest(point, ref wood);
 
 				floorObjectHealth--;
+
+				SoundSystem.PlayAtPosition(Game1.gamestate.player.position, point.ToVector2(), "treeHit", true);
 			}
 
 
 			if (floorObjectHealth <= 0)
 			{
 				floorObjectType = FloorObjectType.None;
+				SoundSystem.PlayAtPosition(Game1.gamestate.player.position, point.ToVector2(), "treeBreak", true);
 			}
 		}
 

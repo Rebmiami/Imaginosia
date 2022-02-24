@@ -17,6 +17,8 @@ namespace Imaginosia.Gameplay
 
 		public WorldTile[,] tiles;
 
+		public List<Point> fires;
+
 		public static World GenerateNew()
 		{
 			World world = new World();

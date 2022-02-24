@@ -43,6 +43,18 @@
 /processorParam:DebugMode=Auto
 /build:DarknessShader.fx
 
+#begin FireLight.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:FireLight.png
+
 #begin FlashlightMask.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -138,6 +150,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:RatReal.png
+
+#begin SFX/TreeBreak.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/TreeBreak.wav
+
+#begin SFX/TreeHit.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/TreeHit.wav
 
 #begin SpriteFont.png
 /importer:TextureImporter

@@ -24,6 +24,8 @@ namespace Imaginosia.Gameplay
 			}
 
 			health = MaxHealth;
+			hunger = MaxHunger;
+			magic = MaxMagic;
 		}
 
 		public Item[] inventory = new Item[5];
@@ -59,6 +61,8 @@ namespace Imaginosia.Gameplay
 
 		public const int MaxTileReach = 4;
 
+		public int walkTimer;
+
 		public override void Update()
 		{
 			bool canInteractTile = Vector2.Distance(GamePosition, MouseHelper.MouseTileHover.ToVector2()) < MaxTileReach;
@@ -86,9 +90,17 @@ namespace Imaginosia.Gameplay
 
 
 
-			float speed = 0.2f;
+			float speed = 0.1f;
+			if (KeyHelper.Down(Keys.LeftShift) || KeyHelper.Down(Keys.RightShift))
+			{
+				speed = 0.05f;
+			}
+			if ((KeyHelper.Down(Keys.LeftControl) || KeyHelper.Down(Keys.RightControl)) && hunger > 2.5f)
+			{
+				speed = 0.2f;
+			}
 
-			
+
 			if (KeyHelper.Down(Keys.W) && !KeyHelper.Down(Keys.S))
 			{
 				velocity.Y = Math.Max(-1, velocity.Y - 1);
@@ -112,6 +124,15 @@ namespace Imaginosia.Gameplay
 
 			noise += (int)(velocity.Length() * 50);
 
+			if (velocity.Length() > 0.05f)
+			{
+				walkTimer++;
+			}
+			else
+			{
+				walkTimer = 0;
+			}
+
 			Vector2 oldDirection = gameDirection;
 			direction = Vector2.Normalize(MouseHelper.Position - ScreenPosition);
 			gameDirection = Vector2.Normalize(PositionHelper.ToGamePosition(direction, true));
@@ -132,75 +153,81 @@ namespace Imaginosia.Gameplay
 
 			if (KeyHelper.Down(Keys.LeftShift) || KeyHelper.Down(Keys.RightShift))
 			{
-				
+				if (canInteractTile)
 				{
-					if (canInteractTile)
+					if (inventory[itemSlot] != null && focusTile.floorItem != null && inventory[itemSlot].itemID == focusTile.floorItem.itemID)
 					{
-						if (inventory[itemSlot] != null && focusTile.floorItem != null && inventory[itemSlot].itemID == focusTile.floorItem.itemID)
+						MouseText = "Right click to take " + focusTile.floorItem.GetName() + "/Click to drop " + inventory[itemSlot].GetName();
+
+						if (MouseHelper.Pressed(MouseButton.Left))
 						{
-							MouseText = "Right click to take " + focusTile.floorItem.GetName() + "/Click to drop " + inventory[itemSlot].GetName();
-
-							if (MouseHelper.Pressed(MouseButton.Left))
-							{
-								Item.MergeStacks(ref focusTile.floorItem, ref inventory[itemSlot]);
-							}
-							if (MouseHelper.Pressed(MouseButton.Right))
-							{
-								Item.MergeStacks(ref inventory[itemSlot], ref focusTile.floorItem);
-							}
-							goto SingleAction;
+							Item.MergeStacks(ref focusTile.floorItem, ref inventory[itemSlot]);
 						}
-						else
+						if (MouseHelper.Pressed(MouseButton.Right))
 						{
-							int firstOpenSlot = 3;
-							for (int i = firstOpenSlot; i < inventory.Length; i++)
-							{
-								if (inventory[i] == null || (focusTile.floorItem != null && inventory[i].itemID == focusTile.floorItem.itemID))
-								{
-									break;
-								}
-								else
-								{
-									firstOpenSlot++;
-								}
-							}
-
-							if (focusTile.floorItem != null && firstOpenSlot < inventory.Length)
-							{
-								MouseText = "Right click to take " + focusTile.floorItem.GetName();
-								if (MouseHelper.Pressed(MouseButton.Right))
-								{
-									Item.MergeStacks(ref inventory[firstOpenSlot], ref focusTile.floorItem);
-								}
-								goto SingleAction;
-							}
-							if (inventory[itemSlot] != null)
-							{
-								if (itemSlot <= 3)
-								{
-									MouseText = "Cannot drop this item";
-									goto SingleAction;
-								}
-
-								MouseText = "Click to drop " + inventory[itemSlot].GetName();
-								if (MouseHelper.Pressed(MouseButton.Left))
-									focusTile.PlaceItem(ref inventory[itemSlot]);
-								goto SingleAction;
-							}
+							Item.MergeStacks(ref inventory[itemSlot], ref focusTile.floorItem);
 						}
+						goto SingleAction;
 					}
 					else
 					{
-						MouseText = "Cannot reach";
-						goto SingleAction;
+						int firstOpenSlot = 3;
+						for (int i = firstOpenSlot; i < inventorySize; i++)
+						{
+							if (inventory[i] == null)
+							{
+								break;
+							}
+							if (focusTile.floorItem != null && inventory[i].itemID == focusTile.floorItem.itemID && inventory[i].stackable && inventory[i].stackCount < inventory[i].maxStack)
+							{
+								break;
+							}
+							firstOpenSlot++;
+						}
+
+						if (focusTile.floorItem != null && firstOpenSlot < inventorySize)
+						{
+							MouseText = "Right click to take " + focusTile.floorItem.GetName();
+							if (MouseHelper.Pressed(MouseButton.Right))
+							{
+								if (inventory[firstOpenSlot] == null)
+								{
+									inventory[firstOpenSlot] = focusTile.TakeItem();
+								}
+								else
+								{
+									Item.MergeStacks(ref inventory[firstOpenSlot], ref focusTile.floorItem);
+								}
+							}
+							goto SingleAction;
+						}
+						if (inventory[itemSlot] != null)
+						{
+							if (itemSlot <= 3)
+							{
+								MouseText = "Cannot drop this item";
+								goto SingleAction;
+							}
+
+							MouseText = "Click to drop " + inventory[itemSlot].GetName();
+							if (MouseHelper.Pressed(MouseButton.Left))
+								focusTile.PlaceItem(ref inventory[itemSlot]);
+							goto SingleAction;
+						}
 					}
 				}
+				else
+				{
+					MouseText = "Cannot reach";
+					goto SingleAction;
+				}
+
+				SingleAction:;
 			}
 			else
 			{
-				if (HeldItem != null && HeldItem.itemID == ItemType.Knife && canInteractTile && HeldItem.CanUseItem())
+				if (!ImaginationHandler.IsImagination && HeldItem != null && HeldItem.itemID == ItemType.Knife && canInteractTile && HeldItem.CanUseItem())
 				{
-
 					Enemy toScavenge = null;
 					foreach (var item in Game1.gamestate.enemies)
 					{
@@ -314,9 +341,142 @@ namespace Imaginosia.Gameplay
 					}
 					goto SingleAction;
 				}
-					
+
+				if (focusTile.floorItem != null && HeldItem != null && HeldItem.CanUseItem())
+				{
+					if (canInteractTile)
+					{
+						if (HeldItem.itemID == ItemType.Knife && focusTile.floorItem.itemID == ItemType.Fur && focusTile.floorItem.stackCount >= 5)
+						{
+							Item item = new Item();
+							item.itemID = ItemType.Clothes;
+							item.SetDefaults();
+
+							MouseText = "Click to make " + item.GetName();
+							if (MouseHelper.Pressed(MouseButton.Left))
+							{
+								HeldItem.UseItem();
+								focusTile.floorItem.stackCount -= 5;
+								if (focusTile.floorItem.stackCount <= 0)
+								{
+									focusTile.floorItem = null;
+								}
+								Game1.gamestate.world.PlaceItemNearest(MouseHelper.MouseTileHover, ref item);
+							}
+						}
+						if (HeldItem.itemID == ItemType.BoneKnife && focusTile.floorItem.itemID == ItemType.Fur && focusTile.floorItem.stackCount >= 8)
+						{
+							Item item = new Item();
+							item.itemID = ItemType.Bag;
+							item.SetDefaults();
+
+							MouseText = "Click to make " + item.GetName();
+							if (MouseHelper.Pressed(MouseButton.Left))
+							{
+								HeldItem.UseItem();
+								focusTile.floorItem.stackCount -= 8;
+								if (focusTile.floorItem.stackCount <= 0)
+								{
+									focusTile.floorItem = null;
+								}
+								Game1.gamestate.world.PlaceItemNearest(MouseHelper.MouseTileHover, ref item);
+							}
+						}
+						if (HeldItem.itemID == ItemType.Knife && focusTile.floorItem.itemID == ItemType.Bone)
+						{
+							Item item = new Item();
+							item.itemID = ItemType.BoneKnife;
+							item.stackCount = 2;
+							item.SetDefaults();
+
+							MouseText = "Click to make " + item.GetName();
+							if (MouseHelper.Pressed(MouseButton.Left))
+							{
+								HeldItem.UseItem();
+								focusTile.floorItem.stackCount--;
+								if (focusTile.floorItem.stackCount <= 0)
+								{
+									focusTile.floorItem = null;
+								}
+								Game1.gamestate.world.PlaceItemNearest(MouseHelper.MouseTileHover, ref item);
+							}
+						}
+						if (HeldItem.itemID == ItemType.Axe && focusTile.floorItem.itemID == ItemType.Bone)
+						{
+							Item item = new Item();
+							item.itemID = ItemType.BoneTrap;
+							item.SetDefaults();
+
+							MouseText = "Click to make " + item.GetName();
+							if (MouseHelper.Pressed(MouseButton.Left))
+							{
+								HeldItem.UseItem();
+								focusTile.floorItem.stackCount--;
+								if (focusTile.floorItem.stackCount <= 0)
+								{
+									focusTile.floorItem = null;
+								}
+								Game1.gamestate.world.PlaceItemNearest(MouseHelper.MouseTileHover, ref item);
+							}
+						}
+						if (HeldItem.itemID == ItemType.Axe && focusTile.floorItem.itemID == ItemType.Wood)
+						{
+							Item item = new Item();
+							item.itemID = ItemType.WoodStake;
+							item.SetDefaults();
+
+							MouseText = "Click to make " + item.GetName();
+							if (MouseHelper.Pressed(MouseButton.Left))
+							{
+								HeldItem.UseItem();
+								focusTile.floorItem.stackCount--;
+								if (focusTile.floorItem.stackCount <= 0)
+								{
+									focusTile.floorItem = null;
+								}
+								Game1.gamestate.world.PlaceItemNearest(MouseHelper.MouseTileHover, ref item);
+							}
+						}
+					}
+					else
+					{
+						MouseText = "Cannot reach";
+					}
+					goto SingleAction;
+				}
+
+				if (HeldItem != null)
+				{
+					if (HeldItem.itemID == ItemType.MeatRaw)
+					{
+						MouseText = "Click to eat";
+						if (MouseHelper.Pressed(MouseButton.Left))
+						{
+							HeldItem.UseItem();
+							if (HeldItem.stackCount <= 0)
+							{
+								HeldItem = null;
+							}
+							hunger += 0.5f;
+						}
+					}
+					else if (HeldItem.itemID == ItemType.MeatCooked)
+					{
+						MouseText = "Click to eat";
+						if (MouseHelper.Pressed(MouseButton.Left))
+						{
+							HeldItem.UseItem();
+							if (HeldItem.stackCount <= 0)
+							{
+								HeldItem = null;
+							}
+							hunger += 2f;
+						}
+					}
+				}
 
 
+				SingleAction:
 
 
 				if (MouseHelper.Pressed(MouseButton.Right) && inventory[0].CanUseItem())
@@ -331,7 +491,6 @@ namespace Imaginosia.Gameplay
 					};
 				}
 			}
-			SingleAction:
 
 			if (HeldItem != null && HeldItem.CanUseItem())
 			{
@@ -345,6 +504,23 @@ namespace Imaginosia.Gameplay
 			{
 				invFrames--;
 			}
+
+			hunger -= 0.0005f + 0.04f * velocity.Length();
+
+			if (health < MaxHealth)
+			{
+				hunger -= 0.01f;
+				health += 0.02f;
+			}
+
+			if (hunger == 0)
+			{
+				health -= 0.01f;
+			}
+
+			health = Math.Clamp(health, 0, MaxHealth);
+			hunger = Math.Clamp(hunger, 0, MaxHunger);
+			magic = Math.Clamp(magic, 0, MaxMagic);
 
 			base.Update();
 		}
@@ -396,18 +572,40 @@ namespace Imaginosia.Gameplay
 			// 	invTransparency = (float)Math.Sin((double)invFrames * MathHelper.TwoPi / 8);
 			// }
 
-			spriteBatcher.Draw(Assets.Tex2["player"].texture, ScreenPosition - new Vector2(8, 16), null, Color.White, 0, dimensions / 2, 1, direction.X > 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
+			int baseFrame = 0;
+
+			if (walkTimer % 30 > 15)
+			{
+				baseFrame++;
+			}
+			if (direction.Y < 0)
+			{
+				baseFrame += 2;
+			}
+			if (ImaginationHandler.IsImagination)
+			{
+				baseFrame += 12;
+			}
+
+			spriteBatcher.Draw(Assets.Tex2["player"].texture, ScreenPosition - new Vector2(8.5f, 8), Assets.Tex2["player"].frames[baseFrame], Color.White, 0, dimensions / 2, 1, direction.X > 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
 
 			if (HeldItem != null && HeldItem.itemID == ItemType.Gun)
 			{
 				float rotation = (float)Math.Atan2(direction.Y, direction.X);
 				int holdDir = direction.X > 0 ? 1 : -1;
 				SlicedSprite texture = Assets.Tex2["items"];
-				if (!HeldItem.CanUseItem())
+				if (ImaginationHandler.IsImagination)
 				{
 					rotation += MathHelper.PiOver4 * holdDir;
 				}
-				spriteBatcher.Draw(texture.texture, ScreenPosition + new Vector2(0, -4) + direction * 4, texture.frames[HeldItem.GetSlice()], Color.White, rotation, texture.frames[0].Size.ToVector2() / 2, 1, holdDir == 1 ? SpriteEffects.None : SpriteEffects.FlipVertically, 0);
+				else
+				{
+					if (!HeldItem.CanUseItem())
+					{
+						rotation -= MathHelper.PiOver4 * holdDir;
+					}
+				}
+				spriteBatcher.Draw(texture.texture, ScreenPosition + new Vector2(0, -0) + direction * 16, texture.frames[HeldItem.GetSlice()], Color.White, rotation, texture.frames[0].Size.ToVector2() / 2, 1, holdDir == 1 ? SpriteEffects.None : SpriteEffects.FlipVertically, 0);
 			}
 		}
 	}

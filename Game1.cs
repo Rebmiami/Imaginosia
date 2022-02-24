@@ -1,6 +1,7 @@
 ﻿using Imaginosia.Gameplay;
 using Imaginosia.Graphics;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
@@ -26,8 +27,6 @@ namespace Imaginosia
 			getGame = this;
 			gamestate = new Gamestate();
 
-
-			gamestate.SpawnEnemy(Vector2.Zero, 2);
 			// TODO: Add your initialization logic here
 			Window.AllowUserResizing = true;
 
@@ -43,7 +42,7 @@ namespace Imaginosia
 		{
 			spriteBatch = new SpriteBatcher(GraphicsDevice, new Rectangle(0, 0, GameWidth, GameHeight));
 
-			Assets.Tex2["player"] = SlicedSprite.Frameify(Content.Load<Texture2D>("PlayerSprite"), 0, 0);
+			Assets.Tex2["player"] = SlicedSprite.Frameify(Content.Load<Texture2D>("PlayerSprite"), 5, 3);
 			Assets.Tex2["tiles"] = SlicedSprite.Frameify(Content.Load<Texture2D>("TilesetReal"), 7, 15);
 			Assets.Tex2["tilesImaginary"] = SlicedSprite.Frameify(Content.Load<Texture2D>("TilesetImaginary"), 7, 15);
 			Assets.Tex2["items"] = SlicedSprite.Frameify(Content.Load<Texture2D>("ItemSprites"), 13, 1);
@@ -60,8 +59,12 @@ namespace Imaginosia
 
 
 			Assets.Tex["flashlightMask"] = Content.Load<Texture2D>("FlashlightMask");
+			Assets.Tex["fireMask"] = Content.Load<Texture2D>("FireLight");
 			Assets.Tex["special"] = new Texture2D(GraphicsDevice, 1, 1);
 			Assets.Tex["special"].SetData(new Color[] { Color.White });
+
+			Assets.Sfx["treeHit"] = Content.Load<SoundEffect>("SFX/TreeHit");
+			Assets.Sfx["treeBreak"] = Content.Load<SoundEffect>("SFX/TreeBreak");
 
 			Assets.Darkness = Content.Load<Effect>("DarknessShader");
 
@@ -94,9 +97,10 @@ namespace Imaginosia
 			// spriteBatch.LayerBegin("player", blendState: BlendState.Additive);
 			// spriteBatch.LayerEnd();
 
-			spriteBatch.LayerBegin("light");
+			spriteBatch.LayerBegin("light", blendState: BlendState.Additive);
 
-			spriteBatch.Draw(Assets.Tex["flashlightMask"], gamestate.player.ScreenPosition, null, Color.White, (float)Math.Atan2(gamestate.player.direction.Y, gamestate.player.direction.X) - MathHelper.PiOver2, new Vector2(50, 10), 1, SpriteEffects.None, 0);
+			spriteBatch.Draw(Assets.Tex["flashlightMask"], gamestate.player.ScreenPosition, null, Color.White * 0.8f, (float)Math.Atan2(gamestate.player.direction.Y, gamestate.player.direction.X) - MathHelper.PiOver2, new Vector2(50, 0), 1, SpriteEffects.None, 0);
+			spriteBatch.Draw(Assets.Tex["fireMask"], gamestate.player.ScreenPosition - new Vector2(0), null, Color.White, 0, new Vector2(540), new Vector2(0.2f, 0.13f), SpriteEffects.None, 0);
 
 			spriteBatch.LayerEnd();
 
