@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Imaginosia.Graphics;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
@@ -48,7 +49,9 @@ namespace Imaginosia.Gameplay
 			{
 				kill = true;
 			}
-			rotation = (float)Math.Atan2(velocity.Y, velocity.X) + MathHelper.Pi / 2;
+			Vector2 screenVelocity = Vector2.Normalize(PositionHelper.ToScreenPosition(velocity, true));
+
+			rotation = (float)Math.Atan2(screenVelocity.Y, screenVelocity.X) + MathHelper.Pi / 2;
 
 			foreach (Enemy enemy in Game1.gamestate.enemies)
 			{

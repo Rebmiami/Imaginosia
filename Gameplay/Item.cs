@@ -19,8 +19,11 @@ namespace Imaginosia.Gameplay
 		public bool multiUse;
 		public int maxStack;
 		public bool consumable;
+		public float magicCost;
 
 		public ItemType itemID;
+
+		public int hiddenValue;
 
 		public void SetDefaults()
 		{
@@ -32,6 +35,7 @@ namespace Imaginosia.Gameplay
 					stackable = false;
 					consumable = false;
 					multiUse = true;
+					magicCost = 1;
 					break;
 				case ItemType.Knife:
 					useCooldown = 20;
@@ -49,11 +53,13 @@ namespace Imaginosia.Gameplay
 					stackable = false;
 					consumable = false;
 					multiUse = true;
+					magicCost = 2;
 					break;
 				case ItemType.MeatRaw:
 					stackable = true;
 					consumable = true;
 					maxStack = 15;
+					hiddenValue = 900; // 15 seconds to cook
 					break;
 				case ItemType.MeatCooked:
 					stackable = true;
@@ -65,8 +71,11 @@ namespace Imaginosia.Gameplay
 					maxStack = 15;
 					break;
 				case ItemType.Clothes:
+					stackable = false;
+					hiddenValue = 20;
 					break;
 				case ItemType.Bag:
+					stackable = false;
 					break;
 				case ItemType.Bone:
 					stackable = true;
@@ -85,6 +94,8 @@ namespace Imaginosia.Gameplay
 					maxStack = 15;
 					break;
 				case ItemType.WoodStake:
+					stackable = true;
+					maxStack = 15;
 					break;
 				default:
 					break;
@@ -93,25 +104,46 @@ namespace Imaginosia.Gameplay
 
 		public virtual bool CanUseItem()
 		{
-			if (multiUse && usesLeft <= 0)
+			if (ImaginationHandler.IsImagination)
 			{
-				return false;
-			}
+				if (Game1.gamestate.player.magic < magicCost)
+				{
+					return false;
+				}
 
-			return useTime == 0;
+				return useTime == 0;
+			}
+			else
+			{
+				if (multiUse && usesLeft <= 0)
+				{
+					return false;
+				}
+
+				return useTime == 0;
+			}
 		}
 
 		public virtual bool UseItem()
 		{
 			useTime = useCooldown;
-			if (multiUse)
+			if (ImaginationHandler.IsImagination)
 			{
-				usesLeft--;
-				if (usesLeft <= 0 && consumable)
+				if (multiUse)
 				{
-					return false;
+					Game1.gamestate.player.magicRechargeTimer = 0;
+					Game1.gamestate.player.magic -= magicCost;
 				}
 			}
+			else
+			{
+				if (multiUse)
+				{
+					usesLeft--;
+				}
+			}
+
+			
 			if (stackable)
 			{
 				stackCount--;

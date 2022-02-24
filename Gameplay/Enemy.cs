@@ -147,12 +147,18 @@ namespace Imaginosia.Gameplay
 						fear = Math.Clamp((int)(fear * 0.99f), 0, 1000);
 					}
 
+					if (carryingItem != null)
+					{
+						state = EnemyState.Flee;
+						fear = 1000;
+					}
+
 
 
 					switch (actingState)
 					{
 						case EnemyState.Sleep:
-							if (alertness > 800)
+							if (alertness > 800 && drive > 0)
 							{
 								state = EnemyState.Attack;
 							}
@@ -167,15 +173,25 @@ namespace Imaginosia.Gameplay
 							}
 							if (alertness > 200)
 							{
-								GetNewInterest();
-								state = EnemyState.Sneak;
-								attention = RNG.rand.Next(60) + 60;
+								if (type == 1)
+								{
+									state = EnemyState.Flee;
+									direction *= -1;
+									attention = RNG.rand.Next(60) + 30;
+								}
+								else if (drive > 0)
+								{
+									GetNewInterest();
+									state = EnemyState.Sneak;
+									attention = RNG.rand.Next(60) + 60;
+								}
 							}
+							Sniff();
 
 							break;
 						case EnemyState.Sneak:
 							velocity = direction * speed * 0.3f;
-							if (Vector2.Distance(position, interest) < 8 || alertness > 1000 - drive * 2)
+							if ((Vector2.Distance(position, interest) < 8 || alertness > 1000 - drive * 2) && drive > 0)
 							{
 								GetNewInterest();
 								state = EnemyState.Attack;
@@ -194,7 +210,11 @@ namespace Imaginosia.Gameplay
 								attention = RNG.rand.Next(60) + 60;
 							}
 
-							if (drive + alertness < 50)
+							if (type == 1 && alertness > 400)
+							{
+								state = EnemyState.Wander;
+							}
+							else if (drive + alertness < 50)
 							{
 								state = EnemyState.Wander;
 							}
@@ -203,6 +223,12 @@ namespace Imaginosia.Gameplay
 							if (RNG.rand.Next(60) == 1)
 							{
 								drive--;
+							}
+
+							if (Game1.gamestate.world.tiles[(int)Center.X, (int)Center.Y].floorItem != null)
+							{
+								carryingItem = Game1.gamestate.world.tiles[(int)Center.X, (int)Center.Y].TakeItem();
+								state = EnemyState.Flee;
 							}
 
 							break;
@@ -229,6 +255,21 @@ namespace Imaginosia.Gameplay
 								drive--;
 							}
 
+							if (Game1.gamestate.world.tiles[(int)Center.X, (int)Center.Y].floorItem != null)
+							{
+								carryingItem = Game1.gamestate.world.tiles[(int)Center.X, (int)Center.Y].TakeItem();
+								state = EnemyState.Flee;
+							}
+
+							if (Game1.gamestate.player.Hitbox.Intersects(Hitbox))
+							{
+								int damage = 1;
+								if (type == 2)
+									damage = 2;
+
+								Game1.gamestate.player.Hit(damage, this, velocity);
+							}
+
 
 							break;
 
@@ -241,7 +282,7 @@ namespace Imaginosia.Gameplay
 								{
 									state = EnemyState.Sleep;
 								}
-								else
+								else if (type == 0)
 								{
 									state = EnemyState.Wander;
 								}
@@ -382,6 +423,31 @@ namespace Imaginosia.Gameplay
 				}
 			}
 
+			if (ImaginationHandler.IsImagination && dead && animationTimer == 0)
+			{
+				remove = true;
+				Game1.gamestate.world.PlaceItemNearest(Center.ToPoint(), ref carryingItem);
+
+				Item item = new Item();
+
+				if (type == 0)
+				{
+					item.itemID = ItemType.MeatRaw;
+				}
+				if (type == 1)
+				{
+					item.itemID = ItemType.Bone;
+				}
+				if (type == 2)
+				{
+					item.itemID = ItemType.Fur;
+				}
+				item.SetDefaults();
+				item.stackCount = 3;
+
+				Game1.gamestate.world.PlaceItemNearest(Center.ToPoint(), ref item);
+			}
+
 			base.Update();
 		}
 
@@ -394,6 +460,15 @@ namespace Imaginosia.Gameplay
 			}
 			else
 			{
+				if (new Rectangle(0, 0, World.WorldWidth, World.WorldHeight).Contains(interest) && Game1.gamestate.world.tiles[(int)interest.X, (int)interest.Y].floorItem != null)
+				{
+					return;
+				}
+				else if (type == 1 && state != EnemyState.Wander)
+				{
+					state = EnemyState.Flee;
+				}
+
 				interest = Game1.gamestate.player.position + MathTools.RotateVector(Vector2.UnitX * (1 - alertness) * 0.005f, RNG.rand.NextDouble() * MathHelper.TwoPi);
 				direction = Vector2.Normalize(interest - Center);
 			}
@@ -414,12 +489,15 @@ namespace Imaginosia.Gameplay
 
 		public void Sniff()
 		{
-			Vector2 sniffTarget = MathTools.RotateVector(new Vector2((float)RNG.rand.NextDouble() * 30), RNG.rand.NextDouble() * MathHelper.TwoPi);
+			if (carryingItem != null)
+				return;
+
+			Vector2 sniffTarget = position + MathTools.RotateVector(new Vector2((float)RNG.rand.NextDouble() * 30), RNG.rand.NextDouble() * MathHelper.TwoPi);
 			if (new Rectangle(0, 0, World.WorldWidth, World.WorldHeight).Contains(sniffTarget))
 			{
 				WorldTile toSniff = Game1.gamestate.world.tiles[(int)sniffTarget.X, (int)sniffTarget.Y];
 
-				if (toSniff.floorItem !=null)
+				if (toSniff.floorItem != null)
 				{
 					Item item = toSniff.floorItem;
 
@@ -427,6 +505,7 @@ namespace Imaginosia.Gameplay
 					if (item.itemID == ItemType.MeatRaw || item.itemID == ItemType.MeatCooked || RNG.rand.Next(3) == 0)
 					{
 						interest = sniffTarget;
+						state = EnemyState.Sneak;
 					}
 				}
 			}
@@ -434,10 +513,6 @@ namespace Imaginosia.Gameplay
 
 		public override void Draw(SpriteBatcher spriteBatcher)
 		{
-			if (ImaginationHandler.IsImagination && dead && animationTimer == 0)
-			{
-				return;
-			}
 
 			if (ImaginationHandler.IsImagination && !spotted)
 			{

@@ -39,6 +39,11 @@ namespace Imaginosia.Gameplay
 				SpawnEnemy(spawnPosition, RNG.rand.Next(3));
 			}
 
+			for (int i = world.fires.Count - 1; i >= 0; i--)
+			{
+				world.tiles[world.fires[i].X, world.fires[i].Y].UpdateFire(world.fires[i]);
+			}
+
 
 			if (KeyHelper.Pressed(Keys.T))
 			{

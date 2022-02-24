@@ -26,6 +26,7 @@ namespace Imaginosia.Gameplay
 			health = MaxHealth;
 			hunger = MaxHunger;
 			magic = MaxMagic;
+			magicRechargeTimer = 0;
 		}
 
 		public Item[] inventory = new Item[5];
@@ -63,6 +64,10 @@ namespace Imaginosia.Gameplay
 
 		public int walkTimer;
 
+		public int clothing;
+
+		public int magicRechargeTimer;
+
 		public override void Update()
 		{
 			bool canInteractTile = Vector2.Distance(GamePosition, MouseHelper.MouseTileHover.ToVector2()) < MaxTileReach;
@@ -71,6 +76,9 @@ namespace Imaginosia.Gameplay
 			noise = 1;
 
 			int inventorySize = 7;
+
+			if (equippedBag)
+				inventorySize += 2;
 
 			if (inventory[itemSlot] == null || inventory[itemSlot].useTime == 0)
 			{
@@ -87,8 +95,6 @@ namespace Imaginosia.Gameplay
 			}
 
 			velocity *= 0.8f;
-
-
 
 			float speed = 0.1f;
 			if (KeyHelper.Down(Keys.LeftShift) || KeyHelper.Down(Keys.RightShift))
@@ -124,7 +130,7 @@ namespace Imaginosia.Gameplay
 
 			noise += (int)(velocity.Length() * 50);
 
-			if (velocity.Length() > 0.05f)
+			if (velocity.Length() > 0.01f)
 			{
 				walkTimer++;
 			}
@@ -174,16 +180,26 @@ namespace Imaginosia.Gameplay
 						int firstOpenSlot = 3;
 						for (int i = firstOpenSlot; i < inventorySize; i++)
 						{
-							if (inventory[i] == null)
-							{
-								break;
-							}
-							if (focusTile.floorItem != null && inventory[i].itemID == focusTile.floorItem.itemID && inventory[i].stackable && inventory[i].stackCount < inventory[i].maxStack)
+							if (inventory[i] != null && focusTile.floorItem != null && inventory[i].itemID == focusTile.floorItem.itemID && inventory[i].stackable && inventory[i].stackCount < inventory[i].maxStack)
 							{
 								break;
 							}
 							firstOpenSlot++;
 						}
+
+						if (firstOpenSlot >= inventorySize)
+						{
+							firstOpenSlot = 3;
+							for (int i = firstOpenSlot; i < inventorySize; i++)
+							{
+								if (inventory[i] == null)
+								{
+									break;
+								}
+								firstOpenSlot++;
+							}
+						}
+
 
 						if (focusTile.floorItem != null && firstOpenSlot < inventorySize)
 						{
@@ -342,10 +358,65 @@ namespace Imaginosia.Gameplay
 					goto SingleAction;
 				}
 
+				if (HeldItem != null)
+				{
+					if (canInteractTile)
+					{
+						if (HeldItem.itemID == ItemType.Matchbox && (focusTile.floorObjectType == FloorObjectType.Tree || (focusTile.floorItem != null && (focusTile.floorItem.itemID == ItemType.Wood || focusTile.floorItem.itemID == ItemType.WoodStake))))
+						{
+							MouseText = "Click to start a fire";
+							if (MouseHelper.Pressed(MouseButton.Left))
+							{
+								HeldItem.UseItem();
+								focusTile.Ignite(MouseHelper.MouseTileHover);
+							}
+							goto SingleAction;
+						}
+					}
+					if (canInteractTile)
+					{
+						if ((HeldItem.itemID == ItemType.Wood || HeldItem.itemID == ItemType.WoodStake) && (focusTile.floorObjectType == FloorObjectType.Campfire))
+						{
+							MouseText = "Click to fuel the fire";
+							if (MouseHelper.Pressed(MouseButton.Left))
+							{
+								HeldItem.UseItem();
+								if (HeldItem.stackCount <= 0)
+								{
+									HeldItem = null;
+								}
+								focusTile.floorObjectHealth += 400;
+							}
+							goto SingleAction;
+						}
+					}
+				}
+
 				if (focusTile.floorItem != null && HeldItem != null && HeldItem.CanUseItem())
 				{
 					if (canInteractTile)
 					{
+						if (HeldItem.itemID == ItemType.Matchbox && (focusTile.floorObjectType == FloorObjectType.Tree || focusTile.floorItem.itemID == ItemType.Wood || focusTile.floorItem.itemID == ItemType.WoodStake))
+						{
+							Item item = new Item();
+							item.itemID = ItemType.Clothes;
+							item.SetDefaults();
+
+							MouseText = "Click to make " + item.GetName();
+							if (MouseHelper.Pressed(MouseButton.Left))
+							{
+								HeldItem.UseItem();
+								focusTile.floorItem.stackCount -= 5;
+								if (focusTile.floorItem.stackCount <= 0)
+								{
+									focusTile.floorItem = null;
+								}
+								Game1.gamestate.world.PlaceItemNearest(MouseHelper.MouseTileHover, ref item);
+							}
+							goto SingleAction;
+						}
+
+
 						if (HeldItem.itemID == ItemType.Knife && focusTile.floorItem.itemID == ItemType.Fur && focusTile.floorItem.stackCount >= 5)
 						{
 							Item item = new Item();
@@ -363,6 +434,7 @@ namespace Imaginosia.Gameplay
 								}
 								Game1.gamestate.world.PlaceItemNearest(MouseHelper.MouseTileHover, ref item);
 							}
+							goto SingleAction;
 						}
 						if (HeldItem.itemID == ItemType.BoneKnife && focusTile.floorItem.itemID == ItemType.Fur && focusTile.floorItem.stackCount >= 8)
 						{
@@ -381,6 +453,7 @@ namespace Imaginosia.Gameplay
 								}
 								Game1.gamestate.world.PlaceItemNearest(MouseHelper.MouseTileHover, ref item);
 							}
+							goto SingleAction;
 						}
 						if (HeldItem.itemID == ItemType.Knife && focusTile.floorItem.itemID == ItemType.Bone)
 						{
@@ -400,6 +473,7 @@ namespace Imaginosia.Gameplay
 								}
 								Game1.gamestate.world.PlaceItemNearest(MouseHelper.MouseTileHover, ref item);
 							}
+							goto SingleAction;
 						}
 						if (HeldItem.itemID == ItemType.Axe && focusTile.floorItem.itemID == ItemType.Bone)
 						{
@@ -418,6 +492,7 @@ namespace Imaginosia.Gameplay
 								}
 								Game1.gamestate.world.PlaceItemNearest(MouseHelper.MouseTileHover, ref item);
 							}
+							goto SingleAction;
 						}
 						if (HeldItem.itemID == ItemType.Axe && focusTile.floorItem.itemID == ItemType.Wood)
 						{
@@ -436,6 +511,7 @@ namespace Imaginosia.Gameplay
 								}
 								Game1.gamestate.world.PlaceItemNearest(MouseHelper.MouseTileHover, ref item);
 							}
+							goto SingleAction;
 						}
 					}
 					else
@@ -473,6 +549,24 @@ namespace Imaginosia.Gameplay
 							hunger += 2f;
 						}
 					}
+					else if (HeldItem.itemID == ItemType.Bag && !equippedBag)
+					{
+						MouseText = "Click to equip";
+						if (MouseHelper.Pressed(MouseButton.Left))
+						{
+							HeldItem = null;
+							equippedBag = true;
+						}
+					}
+					else if (HeldItem.itemID == ItemType.Clothes)
+					{
+						MouseText = "Click to equip";
+						if (MouseHelper.Pressed(MouseButton.Left))
+						{
+							HeldItem = null;
+							clothing = 20;
+						}
+					}
 				}
 
 
@@ -505,17 +599,28 @@ namespace Imaginosia.Gameplay
 				invFrames--;
 			}
 
-			hunger -= 0.0005f + 0.04f * velocity.Length();
+			hunger -= 0.0003f + 0.007f * velocity.Length();
 
-			if (health < MaxHealth)
+			if (health < MaxHealth && hunger > 1)
 			{
-				hunger -= 0.01f;
-				health += 0.02f;
+				float healRate = 1;
+				healRate -= (health / MaxHealth) * 0.9f;
+				healRate *= hunger / MaxHunger;
+				healRate *= 0.8f;
+
+				hunger -= 0.01f * healRate;
+				health += 0.02f * healRate;
 			}
 
-			if (hunger == 0)
+			if (hunger <= 0)
 			{
 				health -= 0.01f;
+			}
+
+			if (ImaginationHandler.IsImagination)
+			{
+				magic += 0.01f * (float)Math.Tanh(magicRechargeTimer / 30f);
+				magicRechargeTimer++;
 			}
 
 			health = Math.Clamp(health, 0, MaxHealth);
@@ -531,7 +636,7 @@ namespace Imaginosia.Gameplay
 				return;
 			health -= damage;
 			// DrawHandler.screenShake += 4;
-			invFrames = 90;
+			invFrames = 30;
 			// UIHandler.hitFlash = 10;
 			CheckDead();
 		}
@@ -588,6 +693,10 @@ namespace Imaginosia.Gameplay
 			}
 
 			spriteBatcher.Draw(Assets.Tex2["player"].texture, ScreenPosition - new Vector2(8.5f, 8), Assets.Tex2["player"].frames[baseFrame], Color.White, 0, dimensions / 2, 1, direction.X > 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
+			if (clothing > 0)
+			spriteBatcher.Draw(Assets.Tex2["player"].texture, ScreenPosition - new Vector2(8.5f, 8), Assets.Tex2["player"].frames[baseFrame + 4], Color.White, 0, dimensions / 2, 1, direction.X > 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
+			if (equippedBag)
+			spriteBatcher.Draw(Assets.Tex2["player"].texture, ScreenPosition - new Vector2(8.5f, 8), Assets.Tex2["player"].frames[baseFrame + 8], Color.White, 0, dimensions / 2, 1, direction.X > 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
 
 			if (HeldItem != null && HeldItem.itemID == ItemType.Gun)
 			{

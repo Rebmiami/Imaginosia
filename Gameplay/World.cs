@@ -48,6 +48,7 @@ namespace Imaginosia.Gameplay
 					world.tiles[x, y].floorObjectHealth = 3;
 				}
 			}
+			world.fires = new List<Point>();
 
 			return world;
 		}
@@ -83,6 +84,13 @@ namespace Imaginosia.Gameplay
 								floorObjectSize = 3;
 								break;
 							case FloorObjectType.Campfire:
+								floorObjectOffset = 39;
+								floorObjectSize = 3;
+								if (RNG.rand.Next(8) == 0)
+								{
+									tile.floorObjectStyle = RNG.rand.Next(4);
+								}
+
 								break;
 							case FloorObjectType.Fence:
 								floorObjectOffset = 30;
@@ -166,10 +174,15 @@ namespace Imaginosia.Gameplay
 			noiseTexture.SetData(colors);
 		}
 
+		public static bool InBounds(Point point)
+		{
+			return new Rectangle(0, 0, WorldHeight, WorldWidth).Contains(point);
+		}
+
 		public void PlaceItemNearest(Point point, ref Item item)
 		{
 			Rectangle range = new Rectangle(point - new Point(5), new Point(10));
-			range = Rectangle.Intersect(range, new Rectangle(0, 0, WorldHeight - 1, WorldWidth - 1));
+			range = Rectangle.Intersect(range, new Rectangle(0, 0, WorldHeight, WorldWidth));
 
 			float distance = 10000f;
 			Point closest = Point.Zero;

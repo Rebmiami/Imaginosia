@@ -27,7 +27,7 @@ namespace Imaginosia.Gameplay
 		{
 			get
 			{
-				return position + dimensions / 2f;
+				return Hitbox.Center;
 			}
 		}
 

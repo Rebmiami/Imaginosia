@@ -48,7 +48,7 @@ namespace Imaginosia.Graphics
 					position += new Vector2(0, -10);
 
 				if (i > 3)
-					position += new Vector2(120, 0);
+					position += new Vector2(180, 0);
 
 				spriteBatcher.Draw(Assets.Tex2["inventory"].texture, position, Assets.Tex2["inventory"].frames[0], Color.White);
 				
@@ -66,6 +66,8 @@ namespace Imaginosia.Graphics
 					spriteBatcher.Draw(Assets.Tex2["inventory"].texture, position, reuseShade, new Color(255, 255, 255, 0));
 				}
 
+				
+
 				int number = 0;
 
 				if (player.inventory[i].stackable)
@@ -75,6 +77,11 @@ namespace Imaginosia.Graphics
 
 				if (player.inventory[i].usesLeft > 0)
 				{
+					// Multi-use items in the imagination use magic instead
+					if (ImaginationHandler.IsImagination)
+					{
+						continue;
+					}
 					number = player.inventory[i].usesLeft;
 				}
 
@@ -87,7 +94,7 @@ namespace Imaginosia.Graphics
 			if (player.HeldItem != null)
 			{
 				string text = player.HeldItem.usesLeft.ToString();
-				TextPrinter.Print(player.HeldItem.GetName(), new Vector2(20, 150), spriteBatcher);
+				TextPrinter.Print(player.HeldItem.GetName(), new Vector2(20, 200), spriteBatcher, background: true);
 			}
 		}
 

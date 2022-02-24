@@ -68,6 +68,54 @@ namespace Imaginosia.Gameplay
 			}
 		}
 
+		public void Ignite(Point point)
+		{
+			Game1.gamestate.world.fires.Add(point);
+
+			if (floorItem != null && (floorItem.itemID == ItemType.Wood || floorItem.itemID == ItemType.WoodStake))
+			{
+				floorObjectHealth = 400 * floorItem.stackCount;
+				floorItem = null;
+			}
+
+			if (floorObjectType == FloorObjectType.Tree)
+			{
+				floorObjectHealth = 600;
+			}
+
+			floorObjectType = FloorObjectType.Campfire;
+		}
+
+		public void UpdateFire(Point point)
+		{
+			floorObjectHealth--;
+
+			for (int i = 0; i < 9; i++)
+			{
+				int x = i % 3 - 1 + point.X;
+				int y = i / 3 - 1 + point.Y;
+
+				if (World.InBounds(new Point(x, y)))
+				{
+					Item item = Game1.gamestate.world.tiles[x, y].floorItem;
+					if (item != null && item.itemID == ItemType.MeatRaw)
+					{
+						item.hiddenValue--;
+						if (item.hiddenValue <= 0)
+						{
+							item.itemID = ItemType.MeatCooked;
+						}
+					}
+				}
+			}
+
+			if (floorObjectHealth <= 0)
+			{
+				Game1.gamestate.world.fires.Remove(point);
+				floorObjectType = FloorObjectType.None;
+			}
+		}
+
 		public Item TakeItem()
 		{
 			Item y = floorItem;

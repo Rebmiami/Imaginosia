@@ -59,6 +59,8 @@ namespace Imaginosia
 
 
 			Assets.Tex["flashlightMask"] = Content.Load<Texture2D>("FlashlightMask");
+			Assets.Tex["vignetteMask"] = Content.Load<Texture2D>("VignetteMask");
+			Assets.Tex["vignetteOverlay"] = Content.Load<Texture2D>("VignetteOverlay");
 			Assets.Tex["fireMask"] = Content.Load<Texture2D>("FireLight");
 			Assets.Tex["special"] = new Texture2D(GraphicsDevice, 1, 1);
 			Assets.Tex["special"].SetData(new Color[] { Color.White });
@@ -90,6 +92,20 @@ namespace Imaginosia
 
 		protected override void Draw(GameTime gameTime)
 		{
+			Rectangle destination = Window.ClientBounds;
+			destination.Location -= Window.Position;
+
+			Point a = destination.Size / new Point(GameWidth, GameHeight);
+
+			int scale = Math.Min(a.X, a.Y);
+			ScreenScalingFactor = scale;
+
+			destination.Size = new Point(GameWidth * ScreenScalingFactor, GameHeight * ScreenScalingFactor);
+
+
+
+
+
 			GraphicsDevice.Clear(Color.CornflowerBlue);
 
 			gamestate.Draw(spriteBatch);
@@ -100,7 +116,15 @@ namespace Imaginosia
 			spriteBatch.LayerBegin("light", blendState: BlendState.Additive);
 
 			spriteBatch.Draw(Assets.Tex["flashlightMask"], gamestate.player.ScreenPosition, null, Color.White * 0.8f, (float)Math.Atan2(gamestate.player.direction.Y, gamestate.player.direction.X) - MathHelper.PiOver2, new Vector2(50, 0), 1, SpriteEffects.None, 0);
-			spriteBatch.Draw(Assets.Tex["fireMask"], gamestate.player.ScreenPosition - new Vector2(0), null, Color.White, 0, new Vector2(540), new Vector2(0.2f, 0.13f), SpriteEffects.None, 0);
+			spriteBatch.Draw(Assets.Tex["fireMask"], gamestate.player.ScreenPosition, null, Color.White, 0, new Vector2(540), new Vector2(0.2f, 0.13f), SpriteEffects.None, 0);
+
+			foreach (var item in gamestate.world.fires)
+			{
+				float intensity = (float)Math.Sqrt(gamestate.world.tiles[item.X, item.Y].floorObjectHealth * 0.001f);
+
+
+				spriteBatch.Draw(Assets.Tex["fireMask"], PositionHelper.ToScreenPosition(item.ToVector2() + new Vector2(0.5f)), null, Color.White, 0, new Vector2(540), new Vector2(0.2f, 0.13f) * intensity, SpriteEffects.None, 0);
+			}
 
 			spriteBatch.LayerEnd();
 
@@ -128,19 +152,12 @@ namespace Imaginosia
 
 			UIHandler.Draw(spriteBatch);
 
-
+			if (gamestate.player.invFrames > 0)
+			{
+				spriteBatch.Draw(Assets.Tex["vignetteOverlay"], new Rectangle(0, 0, GameWidth, GameHeight), Color.Red * (gamestate.player.invFrames / 30f));
+			}
 
 			spriteBatch.End();
-
-			Rectangle destination = Window.ClientBounds;
-			destination.Location -= Window.Position;
-
-			Point a = destination.Size / new Point(GameWidth, GameHeight);
-
-			int scale = Math.Min(a.X, a.Y);
-			ScreenScalingFactor = scale;
-
-			destination.Size = new Point(GameWidth * ScreenScalingFactor, GameHeight * ScreenScalingFactor);
 
 			spriteBatch.FrameBegin(samplerState: SamplerState.PointClamp);
 			spriteBatch.Draw(spriteBatch.GetLayer("final"), destination, Color.White);

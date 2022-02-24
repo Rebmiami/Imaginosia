@@ -10,6 +10,7 @@ namespace Imaginosia.Gameplay
 		Tree,
 		Campfire,
 		Fence,
-		BoneTrap
+		BoneTrap,
+		Mushroom
 	}
 }
