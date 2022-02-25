@@ -50,6 +50,12 @@ namespace Imaginosia.Gameplay
 			}
 			world.fires = new List<Point>();
 
+
+			int mushrooms = 3;
+			for (int i = 0; i < mushrooms; i++)
+			{
+				world.tiles[RNG.rand.Next(WorldWidth), RNG.rand.Next(WorldHeight)].floorObjectType = FloorObjectType.Mushroom;
+			}
 			return world;
 		}
 
@@ -98,6 +104,10 @@ namespace Imaginosia.Gameplay
 								break;
 							case FloorObjectType.BoneTrap:
 								floorObjectOffset = 22;
+								floorObjectSize = 2;
+								break;
+							case FloorObjectType.Mushroom:
+								floorObjectOffset = 51;
 								floorObjectSize = 2;
 								break;
 							default:

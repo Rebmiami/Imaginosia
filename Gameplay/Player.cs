@@ -70,6 +70,8 @@ namespace Imaginosia.Gameplay
 
 		public int magicRechargeTimer;
 
+		public int hallucinogen;
+
 		public override void Update()
 		{
 			bool canUseKnife = false;
@@ -160,7 +162,8 @@ namespace Imaginosia.Gameplay
 				MouseText = focusTile.floorItem.GetName();
 			}
 
-
+			// This has got to be the single worst block of code I have ever written in my life
+			// Reusing code is for dummies
 			if (KeyHelper.Down(Keys.LeftShift) || KeyHelper.Down(Keys.RightShift))
 			{
 				if (canInteractTile)
@@ -342,6 +345,24 @@ namespace Imaginosia.Gameplay
 						}
 						goto SingleAction;
 					}
+				}
+
+				if (focusTile.floorObjectType == FloorObjectType.Mushroom)
+				{
+					if (canInteractTile)
+					{
+						MouseText = "Click to obtain hallucinogen";
+						if (MouseHelper.Pressed(MouseButton.Left))
+						{
+							focusTile.floorObjectType = FloorObjectType.None;
+							hallucinogen += 3;
+						}
+					}
+					else
+					{
+						MouseText = "Cannot reach";
+					}
+					goto SingleAction;
 				}
 
 				if (focusTile.floorObjectType == FloorObjectType.Tree && HeldItem != null && HeldItem.itemID == ItemType.Axe && HeldItem.CanUseItem())
@@ -600,6 +621,26 @@ namespace Imaginosia.Gameplay
 							{
 								HeldItem = null;
 							}
+
+							if (ImaginationHandler.IsImagination)
+							{
+								new Projectile(position, gameDirection * 0.4f, 8, 1)
+								{
+									updateRes = 1,
+									timeLeft = 24,
+									knockback = 0.5f
+								};
+							}
+							else
+							{
+								noise += 1000;
+								new Projectile(position, gameDirection * 0.6f, 2, 4)
+								{
+									updateRes = 4,
+									timeLeft = 16,
+									knockback = 0.5f
+								};
+							}
 						}
 						goto SingleAction;
 					}
@@ -615,7 +656,7 @@ namespace Imaginosia.Gameplay
 
 					if (ImaginationHandler.IsImagination)
 					{
-						new Projectile(position, gameDirection * 0.2f, 10, 2)
+						new Projectile(position, gameDirection * 0.2f, 3, 2)
 						{
 							updateRes = 1,
 							timeLeft = 64,
@@ -640,7 +681,7 @@ namespace Imaginosia.Gameplay
 					inventory[1].UseItem();
 					if (ImaginationHandler.IsImagination && health == 10)
 					{
-						new Projectile(position, gameDirection * 0.2f, 5, 3)
+						new Projectile(position, gameDirection * 0.2f, 2, 3)
 						{
 							updateRes = 1,
 							timeLeft = 64,

@@ -47,8 +47,12 @@ namespace Imaginosia.Gameplay
 			}
 
 
-			if (KeyHelper.Pressed(Keys.T))
+			if (KeyHelper.Pressed(Keys.T) && (player.hallucinogen > 0 || ImaginationHandler.IsImagination))
 			{
+				if (!ImaginationHandler.IsImagination)
+				{
+					player.hallucinogen--;
+				}	
 				ImaginationHandler.SwitchImagination();
 			}
 

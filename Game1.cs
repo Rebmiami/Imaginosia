@@ -58,6 +58,8 @@ namespace Imaginosia
 			Assets.Tex2["hudBars"] = SlicedSprite.Frameify(Content.Load<Texture2D>("HudBars"), 0, 7);
 
 
+			Assets.Tex["shroomIcon"] = Content.Load<Texture2D>("MushroomIcon");
+
 			Assets.Tex["flashlightMask"] = Content.Load<Texture2D>("FlashlightMask");
 			Assets.Tex["vignetteMask"] = Content.Load<Texture2D>("VignetteMask");
 			Assets.Tex["vignetteOverlay"] = Content.Load<Texture2D>("VignetteOverlay");

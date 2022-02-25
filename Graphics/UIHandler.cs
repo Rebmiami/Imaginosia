@@ -39,10 +39,10 @@ namespace Imaginosia.Graphics
 			spriteBatcher.Draw(Assets.Tex2["hudBars"].texture, hudBarOrigin + new Vector2(0, 8), Assets.Tex2["hudBars"].frames[2 + imagination], Color.White);
 			spriteBatcher.Draw(Assets.Tex2["hudBars"].texture, hudBarOrigin + new Vector2(0, 8), bar2Rect, Color.White);
 
-			if (Game1.gamestate.player.clothing > 0)
+			if (player.clothing > 0)
 			{
 				new Item() { itemID = ItemType.Clothes }.Draw(hudBarOrigin + new Vector2(64, 0), spriteBatcher);
-				TextPrinter.Print((Game1.gamestate.player.clothing) * 5 + "%", hudBarOrigin + new Vector2(66, 12), spriteBatcher);
+				TextPrinter.Print((player.clothing) * 5 + "%", hudBarOrigin + new Vector2(66, 12), spriteBatcher);
 			}
 
 			// Draw inventory
@@ -101,6 +101,12 @@ namespace Imaginosia.Graphics
 			{
 				string text = player.HeldItem.usesLeft.ToString();
 				TextPrinter.Print(player.HeldItem.GetName(), new Vector2(20, 200), spriteBatcher, background: true);
+			}
+
+			for (int i = 0; i < player.hallucinogen; i++)
+			{
+				Vector2 position = new Vector2(340 - i * 18, 10);
+				spriteBatcher.Draw(Assets.Tex["shroomIcon"], position, null, Color.White);
 			}
 		}
 

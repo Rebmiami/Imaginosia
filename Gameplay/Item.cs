@@ -59,7 +59,7 @@ namespace Imaginosia.Gameplay
 					stackable = true;
 					consumable = true;
 					maxStack = 15;
-					hiddenValue = 900; // 15 seconds to cook
+					hiddenValue = 1800; // 30 seconds to cook
 					break;
 				case ItemType.MeatCooked:
 					stackable = true;
