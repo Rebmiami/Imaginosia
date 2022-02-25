@@ -31,6 +31,8 @@ namespace Imaginosia.Gameplay
 
 		public void Update()
 		{
+			ImaginationHandler.TimeSinceSwitched++;
+
 			if (RNG.rand.Next(100) == 0 && enemies.Count < 20)
 			{
 				Vector2 spawnPosition = new Vector2((float)RNG.rand.NextDouble() * World.WorldWidth, (float)RNG.rand.NextDouble() * World.WorldHeight);
@@ -89,7 +91,7 @@ namespace Imaginosia.Gameplay
 			spriteBatcher.Begin(samplerState: SamplerState.PointClamp);
 			player.Draw(spriteBatcher);
 
-			bool debug = false;
+			bool debug = true;
 
 			if (debug)
 				HitboxVisualization.DrawEntityHitbox(player, spriteBatcher);

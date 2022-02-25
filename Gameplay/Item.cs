@@ -106,7 +106,7 @@ namespace Imaginosia.Gameplay
 		{
 			if (ImaginationHandler.IsImagination)
 			{
-				if (Game1.gamestate.player.magic < magicCost)
+				if (Game1.gamestate.player.magic < magicCost * (Game1.gamestate.player.clothing > 0 ? 0.5f : 1f))
 				{
 					return false;
 				}
@@ -132,7 +132,7 @@ namespace Imaginosia.Gameplay
 				if (multiUse)
 				{
 					Game1.gamestate.player.magicRechargeTimer = 0;
-					Game1.gamestate.player.magic -= magicCost;
+					Game1.gamestate.player.magic -= magicCost * (Game1.gamestate.player.clothing > 0 ? 0.5f : 1f);
 				}
 			}
 			else

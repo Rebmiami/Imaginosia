@@ -51,6 +51,7 @@ namespace Imaginosia.Gameplay
 			despawnTimer = 900;
 			spotTimer = 40;
 			soundTimer = 60 + RNG.rand.Next(30);
+			hitboxOffset = new Vector2(0, -1);
 
 			SetDefaults();
 		}
@@ -329,12 +330,12 @@ namespace Imaginosia.Gameplay
 							// 	direction = MathTools.RotateVector(Vector2.UnitX, RNG.rand.NextDouble() * MathHelper.TwoPi);
 							// 	attention = RNG.rand.Next(300) + 60;
 							// }
-							// if (playerDistance < 20)
-							// {
+							if (playerDistance < ImaginationHandler.TimeSinceSwitched / 60f + 10)
+							{
 								GetNewInterest();
 								state = EnemyState.Attack;
 								attention = RNG.rand.Next(60) + 60;
-							// }
+							}
 
 							break;
 						case EnemyState.Sneak:
@@ -443,8 +444,9 @@ namespace Imaginosia.Gameplay
 					item.itemID = ItemType.Fur;
 				}
 				item.SetDefaults();
-				item.stackCount = 3;
+				item.stackCount = 1;
 
+				if (RNG.rand.Next(3) == 0)
 				Game1.gamestate.world.PlaceItemNearest(Center.ToPoint(), ref item);
 			}
 
@@ -476,14 +478,19 @@ namespace Imaginosia.Gameplay
 
 		public virtual void TakeDamage(int damage, Vector2 knockback)
 		{
+			damage = (int)(damage * (RNG.rand.NextDouble() + 0.5f));
 			hitTimer = 6;
 			health -= damage;
 			velocity += knockback;
-			if (health < maxHealth)
+			if (health <= 0)
 			{
 				dead = true;
 				animationTimer = 60;
 				despawnTimer = 3600;
+				if (ImaginationHandler.IsImagination)
+				{
+					Game1.gamestate.player.magic += 0.5f;
+				}
 			}
 		}
 

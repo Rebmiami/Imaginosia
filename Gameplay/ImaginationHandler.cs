@@ -8,6 +8,8 @@ namespace Imaginosia.Gameplay
 	{
 		public static bool IsImagination { get; private set; }
 
+		public static int TimeSinceSwitched { get; set; }
+
 		static ImaginationHandler()
 		{
 			IsImagination = false;
@@ -16,6 +18,7 @@ namespace Imaginosia.Gameplay
 		public static void EnterImagination()
 		{
 			IsImagination = true;
+			TimeSinceSwitched = 0;
 		}
 
 		public static void LeaveImagination()

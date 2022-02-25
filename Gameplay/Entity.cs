@@ -18,6 +18,8 @@ namespace Imaginosia.Gameplay
 		public static Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
 		public float rotation;
 
+		public Vector2 hitboxOffset;
+
 		public Vector2 GetFoot()
 		{
 			return position + new Vector2(dimensions.X / 2, dimensions.Y);
@@ -35,7 +37,7 @@ namespace Imaginosia.Gameplay
 		{
 			get
 			{
-				return new FloatRectangle(position, dimensions);
+				return new FloatRectangle(position + hitboxOffset, dimensions);
 			}
 		}
 
@@ -54,23 +56,23 @@ namespace Imaginosia.Gameplay
 
 			if (Hitbox.Left < windowBox.Left)
 			{
-				position.X = 0;
+				position.X = 0 - hitboxOffset.X;
 				velocity.X = 0;
 			}
 			else if (Hitbox.Right > windowBox.Right)
 			{
-				position.X = World.WorldWidth - dimensions.X;
+				position.X = World.WorldWidth - dimensions.X - hitboxOffset.X;
 				velocity.X = 0;
 			}
 
 			if (Hitbox.Top < windowBox.Top)
 			{
-				position.Y = 0;
+				position.Y = 0 - hitboxOffset.Y;
 				velocity.Y = 0;
 			}
 			else if (Hitbox.Bottom > windowBox.Bottom)
 			{
-				position.Y = World.WorldHeight - dimensions.Y;
+				position.Y = World.WorldHeight - dimensions.Y - hitboxOffset.Y;
 				velocity.Y = 0;
 			}
 		}

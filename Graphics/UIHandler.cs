@@ -39,6 +39,12 @@ namespace Imaginosia.Graphics
 			spriteBatcher.Draw(Assets.Tex2["hudBars"].texture, hudBarOrigin + new Vector2(0, 8), Assets.Tex2["hudBars"].frames[2 + imagination], Color.White);
 			spriteBatcher.Draw(Assets.Tex2["hudBars"].texture, hudBarOrigin + new Vector2(0, 8), bar2Rect, Color.White);
 
+			if (Game1.gamestate.player.clothing > 0)
+			{
+				new Item() { itemID = ItemType.Clothes }.Draw(hudBarOrigin + new Vector2(64, 0), spriteBatcher);
+				TextPrinter.Print((Game1.gamestate.player.clothing) * 5 + "%", hudBarOrigin + new Vector2(66, 12), spriteBatcher);
+			}
+
 			// Draw inventory
 			for (int i = 0; i < player.inventory.Length - (player.equippedBag ? 0 : 2); i++)
 			{

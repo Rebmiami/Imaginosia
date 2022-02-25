@@ -12,6 +12,7 @@ namespace Imaginosia.Gameplay
 	{
 		public Player()
 		{
+			position = new Vector2(50) + MathTools.RotateVector(new Vector2(20, 0), RNG.rand.NextDouble() * MathHelper.TwoPi);
 			dimensions = PositionHelper.ToGamePosition(new Vector2(16, 18), true);
 
 			inventory = new Item[] { new Item() { itemID = ItemType.Gun }, new Item() { itemID = ItemType.Knife }, new Item() { itemID = ItemType.Axe }, new Item() { itemID = ItemType.Matchbox }, null, null, null, null, null };
@@ -27,6 +28,7 @@ namespace Imaginosia.Gameplay
 			hunger = MaxHunger;
 			magic = MaxMagic;
 			magicRechargeTimer = 0;
+			hitboxOffset = new Vector2(-0.5f, -1);
 		}
 
 		public Item[] inventory = new Item[5];
@@ -70,6 +72,8 @@ namespace Imaginosia.Gameplay
 
 		public override void Update()
 		{
+			bool canUseKnife = false;
+
 			bool canInteractTile = Vector2.Distance(GamePosition, MouseHelper.MouseTileHover.ToVector2()) < MaxTileReach;
 			MouseText = null;
 
@@ -242,7 +246,7 @@ namespace Imaginosia.Gameplay
 			}
 			else
 			{
-				if (!ImaginationHandler.IsImagination && HeldItem != null && HeldItem.itemID == ItemType.Knife && canInteractTile && HeldItem.CanUseItem())
+				if (!ImaginationHandler.IsImagination && canInteractTile && inventory[1].CanUseItem())
 				{
 					Enemy toScavenge = null;
 					foreach (var item in Game1.gamestate.enemies)
@@ -258,7 +262,7 @@ namespace Imaginosia.Gameplay
 						MouseText = "Click to scavenge";
 						if (MouseHelper.Pressed(MouseButton.Left))
 						{
-							HeldItem.UseItem();
+							inventory[1].UseItem();
 							toScavenge.remove = true;
 							Game1.gamestate.world.PlaceItemNearest(toScavenge.Center.ToPoint(), ref toScavenge.carryingItem);
 
@@ -533,8 +537,17 @@ namespace Imaginosia.Gameplay
 							{
 								HeldItem = null;
 							}
-							hunger += 0.5f;
+
+							if (ImaginationHandler.IsImagination)
+							{
+								magic += 2;
+							}
+							else
+							{
+								hunger += 0.5f;
+							}
 						}
+						goto SingleAction;
 					}
 					else if (HeldItem.itemID == ItemType.MeatCooked)
 					{
@@ -546,8 +559,17 @@ namespace Imaginosia.Gameplay
 							{
 								HeldItem = null;
 							}
-							hunger += 2f;
+
+							if (ImaginationHandler.IsImagination)
+							{
+								magic += 10;
+							}
+							else
+							{
+								hunger += 2f;
+							}
 						}
+						goto SingleAction;
 					}
 					else if (HeldItem.itemID == ItemType.Bag && !equippedBag)
 					{
@@ -557,6 +579,7 @@ namespace Imaginosia.Gameplay
 							HeldItem = null;
 							equippedBag = true;
 						}
+						goto SingleAction;
 					}
 					else if (HeldItem.itemID == ItemType.Clothes)
 					{
@@ -566,23 +589,79 @@ namespace Imaginosia.Gameplay
 							HeldItem = null;
 							clothing = 20;
 						}
+						goto SingleAction;
+					}
+					else if (HeldItem.itemID == ItemType.BoneKnife)
+					{
+						if (MouseHelper.Pressed(MouseButton.Left))
+						{
+							HeldItem.UseItem();
+							if (HeldItem.stackCount <= 0)
+							{
+								HeldItem = null;
+							}
+						}
+						goto SingleAction;
 					}
 				}
 
+				canUseKnife = true;
 
 				SingleAction:
-
 
 				if (MouseHelper.Pressed(MouseButton.Right) && inventory[0].CanUseItem())
 				{
 					inventory[0].UseItem();
-					noise += 1000;
-					new Projectile(position, gameDirection, 10, 0)
+
+					if (ImaginationHandler.IsImagination)
 					{
-						updateRes = 4,
-						timeLeft = 16,
-						knockback = 1
-					};
+						new Projectile(position, gameDirection * 0.2f, 10, 2)
+						{
+							updateRes = 1,
+							timeLeft = 64,
+							knockback = 0.5f
+						};
+					}
+					else
+					{
+						noise += 1000;
+						new Projectile(position, gameDirection, 10, 0)
+						{
+							updateRes = 4,
+							timeLeft = 16,
+							knockback = 1
+						};
+					}
+				}
+
+
+				if (MouseHelper.Pressed(MouseButton.Left) && inventory[1].CanUseItem() && canUseKnife)
+				{
+					inventory[1].UseItem();
+					if (ImaginationHandler.IsImagination && health == 10)
+					{
+						new Projectile(position, gameDirection * 0.2f, 5, 3)
+						{
+							updateRes = 1,
+							timeLeft = 64,
+							knockback = 0.5f
+						};
+					}
+				}
+
+			}
+
+			if (inventory[1].useTime > 0)
+			{
+				FloatRectangle hitbox = new FloatRectangle(0, 0, 1, 1);
+				hitbox.Location = Center - new Vector2(0.5f);
+				hitbox.Location += direction * 1.2f;
+				foreach (var item in Game1.gamestate.enemies)
+				{
+					if (hitbox.Intersects(item.Hitbox) && !item.dead && item.hitTimer == 0)
+					{
+						item.TakeDamage(4, direction * 0.5f);
+					}
 				}
 			}
 
@@ -634,6 +713,14 @@ namespace Imaginosia.Gameplay
 		{
 			if (invFrames > 0)
 				return;
+
+			if (clothing > 0)
+			{
+				damage /= 2;
+				damage++;
+				clothing -= damage;
+			}
+
 			health -= damage;
 			// DrawHandler.screenShake += 4;
 			invFrames = 30;
@@ -698,7 +785,7 @@ namespace Imaginosia.Gameplay
 			if (equippedBag)
 			spriteBatcher.Draw(Assets.Tex2["player"].texture, ScreenPosition - new Vector2(8.5f, 8), Assets.Tex2["player"].frames[baseFrame + 8], Color.White, 0, dimensions / 2, 1, direction.X > 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
 
-			if (HeldItem != null && HeldItem.itemID == ItemType.Gun)
+			if (HeldItem != null && HeldItem.itemID == ItemType.Gun || !inventory[0].CanUseItem())
 			{
 				float rotation = (float)Math.Atan2(direction.Y, direction.X);
 				int holdDir = direction.X > 0 ? 1 : -1;
@@ -709,12 +796,27 @@ namespace Imaginosia.Gameplay
 				}
 				else
 				{
-					if (!HeldItem.CanUseItem())
+					if (!inventory[0].CanUseItem())
 					{
-						rotation -= MathHelper.PiOver4 * holdDir;
+						rotation -= MathHelper.PiOver4 * holdDir * ((float)inventory[0].useTime / inventory[0].useCooldown);
 					}
 				}
-				spriteBatcher.Draw(texture.texture, ScreenPosition + new Vector2(0, -0) + direction * 16, texture.frames[HeldItem.GetSlice()], Color.White, rotation, texture.frames[0].Size.ToVector2() / 2, 1, holdDir == 1 ? SpriteEffects.None : SpriteEffects.FlipVertically, 0);
+				spriteBatcher.Draw(texture.texture, ScreenPosition + new Vector2(0, -0) + direction * 16, texture.frames[inventory[0].GetSlice()], Color.White, rotation, texture.frames[0].Size.ToVector2() / 2, 1, holdDir == 1 ? SpriteEffects.None : SpriteEffects.FlipVertically, 0);
+			}
+			if (HeldItem != null && HeldItem.itemID == ItemType.Knife || !inventory[1].CanUseItem())
+			{
+				float rotation = (float)Math.Atan2(direction.Y, direction.X);
+				int holdDir = direction.X > 0 ? 1 : -1;
+				SlicedSprite texture = Assets.Tex2["items"];
+				if (ImaginationHandler.IsImagination)
+				{
+					rotation += MathHelper.PiOver4 * holdDir;
+				}
+				else
+				{
+					rotation += MathHelper.PiOver2 * holdDir;
+				}
+				spriteBatcher.Draw(texture.texture, ScreenPosition + new Vector2(0, -0) + direction * (8 + inventory[1].useTime), texture.frames[inventory[1].GetSlice()], Color.White, rotation, texture.frames[0].Size.ToVector2() / 2, 1, holdDir == 1 ? SpriteEffects.None : SpriteEffects.FlipVertically, 0);
 			}
 		}
 	}

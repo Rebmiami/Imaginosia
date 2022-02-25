@@ -36,7 +36,7 @@ namespace Imaginosia.Gameplay
 
 		public override void Draw(SpriteBatcher spriteBatcher)
 		{
-			spriteBatcher.Draw(Assets.Tex2["projectile"].texture, ScreenPosition, Assets.Tex2["projectile"].frames[id], Color.White, rotation, dimensions / 2, 1, SpriteEffects.None, 0);
+			spriteBatcher.Draw(Assets.Tex2["projectile"].texture, ScreenPosition, Assets.Tex2["projectile"].frames[id], Color.White, rotation, new Vector2(8), 1, SpriteEffects.None, 0);
 		}
 
 		public override void Update()
@@ -67,7 +67,7 @@ namespace Imaginosia.Gameplay
 
 		public virtual void OnHitEnemy(Enemy enemy)
 		{
-			enemy.TakeDamage(damage * (int)(RNG.rand.NextDouble() + 0.5f), Vector2.Normalize(velocity) * knockback);
+			enemy.TakeDamage(damage, Vector2.Normalize(velocity) * knockback);
 			kill = true;
 		}
 
