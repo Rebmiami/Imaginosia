@@ -624,7 +624,7 @@ namespace Imaginosia.Gameplay
 
 							if (ImaginationHandler.IsImagination)
 							{
-								new Projectile(position, gameDirection * 0.4f, 8, 1)
+								new Projectile(position, gameDirection * 0.4f, 8, 4)
 								{
 									updateRes = 1,
 									timeLeft = 24,
@@ -633,10 +633,9 @@ namespace Imaginosia.Gameplay
 							}
 							else
 							{
-								noise += 1000;
-								new Projectile(position, gameDirection * 0.6f, 2, 4)
+								new Projectile(position, gameDirection * 0.6f, 2, 1)
 								{
-									updateRes = 4,
+									updateRes = 1,
 									timeLeft = 16,
 									knockback = 0.5f
 								};
@@ -652,26 +651,33 @@ namespace Imaginosia.Gameplay
 
 				if (MouseHelper.Pressed(MouseButton.Right) && inventory[0].CanUseItem())
 				{
-					inventory[0].UseItem();
-
-					if (ImaginationHandler.IsImagination)
+					if (inventory[0].usesLeft > 0)
 					{
-						new Projectile(position, gameDirection * 0.2f, 3, 2)
+						inventory[0].UseItem();
+
+						if (ImaginationHandler.IsImagination)
 						{
-							updateRes = 1,
-							timeLeft = 64,
-							knockback = 0.5f
-						};
+							new Projectile(position, gameDirection * 0.2f, 3, 2)
+							{
+								updateRes = 1,
+								timeLeft = 64,
+								knockback = 0.5f
+							};
+						}
+						else
+						{
+							noise += 1000;
+							new Projectile(position, gameDirection, 10, 0)
+							{
+								updateRes = 4,
+								timeLeft = 16,
+								knockback = 1
+							};
+						}
 					}
 					else
 					{
-						noise += 1000;
-						new Projectile(position, gameDirection, 10, 0)
-						{
-							updateRes = 4,
-							timeLeft = 16,
-							knockback = 1
-						};
+
 					}
 				}
 
@@ -826,7 +832,7 @@ namespace Imaginosia.Gameplay
 			if (equippedBag)
 			spriteBatcher.Draw(Assets.Tex2["player"].texture, ScreenPosition - new Vector2(8.5f, 8), Assets.Tex2["player"].frames[baseFrame + 8], Color.White, 0, dimensions / 2, 1, direction.X > 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
 
-			if (HeldItem != null && HeldItem.itemID == ItemType.Gun || !inventory[0].CanUseItem())
+			if (HeldItem != null && HeldItem.itemID == ItemType.Gun || (inventory[0].useTime > 0))
 			{
 				float rotation = (float)Math.Atan2(direction.Y, direction.X);
 				int holdDir = direction.X > 0 ? 1 : -1;
@@ -844,7 +850,7 @@ namespace Imaginosia.Gameplay
 				}
 				spriteBatcher.Draw(texture.texture, ScreenPosition + new Vector2(0, -0) + direction * 16, texture.frames[inventory[0].GetSlice()], Color.White, rotation, texture.frames[0].Size.ToVector2() / 2, 1, holdDir == 1 ? SpriteEffects.None : SpriteEffects.FlipVertically, 0);
 			}
-			if (HeldItem != null && HeldItem.itemID == ItemType.Knife || !inventory[1].CanUseItem())
+			else if (HeldItem != null && HeldItem.itemID == ItemType.Knife || (inventory[1].useTime > 0))
 			{
 				float rotation = (float)Math.Atan2(direction.Y, direction.X);
 				int holdDir = direction.X > 0 ? 1 : -1;

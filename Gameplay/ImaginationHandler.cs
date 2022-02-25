@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Imaginosia.Graphics;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -18,12 +19,19 @@ namespace Imaginosia.Gameplay
 		public static void EnterImagination()
 		{
 			IsImagination = true;
-			TimeSinceSwitched = 0;
+			ImaginationChanged();
 		}
 
 		public static void LeaveImagination()
 		{
 			IsImagination = false;
+			ImaginationChanged();
+		}
+
+		private static void ImaginationChanged()
+		{
+			DustManager.CreateDustPuff(new FloatRectangle(0, 0, Game1.GameWidth, Game1.GameHeight), Microsoft.Xna.Framework.Vector2.Zero, 1, 5, 1000);
+			TimeSinceSwitched = 0;
 		}
 
 		public static void SwitchImagination()
@@ -36,6 +44,12 @@ namespace Imaginosia.Gameplay
 			{
 				EnterImagination();
 			}
+		}
+
+		public static void Reset()
+		{
+			IsImagination = false;
+			TimeSinceSwitched = 0;
 		}
 	}
 }

@@ -103,6 +103,18 @@ namespace Imaginosia.Graphics
 				TextPrinter.Print(player.HeldItem.GetName(), new Vector2(20, 200), spriteBatcher, background: true);
 			}
 
+			if (player.hallucinogen > 0)
+			{
+				if (player.hunger > 1f)
+				{
+					TextPrinter.Print("Press T to imagine", new Vector2(290, 26), spriteBatcher, background: true);
+				}
+				else
+				{
+					TextPrinter.Print("Too hungry to imagine", new Vector2(280, 26), spriteBatcher, background: true);
+				}
+			}
+
 			for (int i = 0; i < player.hallucinogen; i++)
 			{
 				Vector2 position = new Vector2(340 - i * 18, 10);

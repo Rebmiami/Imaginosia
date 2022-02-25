@@ -56,6 +56,7 @@ namespace Imaginosia
 			Assets.Tex2["bearReal"] = SlicedSprite.Frameify(Content.Load<Texture2D>("BearReal"), 6, 0);
 			Assets.Tex2["bearImaginary"] = SlicedSprite.Frameify(Content.Load<Texture2D>("BearImaginary"), 6, 0);
 			Assets.Tex2["hudBars"] = SlicedSprite.Frameify(Content.Load<Texture2D>("HudBars"), 0, 7);
+			Assets.Tex2["dust"] = SlicedSprite.Frameify(Content.Load<Texture2D>("DustSprites"), 1, 11);
 
 
 			Assets.Tex["shroomIcon"] = Content.Load<Texture2D>("MushroomIcon");
@@ -92,6 +93,8 @@ namespace Imaginosia
 		public static int ScreenScalingFactor = 1;
 		public static Point ScreenOriginOffset = Point.Zero;
 
+		public static int ScreenShake;
+
 		protected override void Draw(GameTime gameTime)
 		{
 			Rectangle destination = Window.ClientBounds;
@@ -104,6 +107,10 @@ namespace Imaginosia
 
 			destination.Size = new Point(GameWidth * ScreenScalingFactor, GameHeight * ScreenScalingFactor);
 
+			ScreenOriginOffset.X = (Window.ClientBounds.Width - destination.Width) / 2;
+			ScreenOriginOffset.Y = (Window.ClientBounds.Height - destination.Height) / 2;
+
+			destination.Location = ScreenOriginOffset;
 
 
 
@@ -149,15 +156,27 @@ namespace Imaginosia
 
 			spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
+			DustManager.Draw(spriteBatch, 1);
+
 			if (gamestate.player.MouseText != null)
 			TextPrinter.Print(gamestate.player.MouseText, MouseHelper.Position, spriteBatch, background: true);
 
 			UIHandler.Draw(spriteBatch);
 
-			if (gamestate.player.invFrames > 0)
+			if (gamestate.player.hunger < 2f && ImaginationHandler.IsImagination)
+			{
+				spriteBatch.Draw(Assets.Tex["vignetteOverlay"], new Rectangle(0, 0, GameWidth, GameHeight), Color.Black * (2 - gamestate.player.hunger));
+			}
+			else if (gamestate.player.hunger < 1f)
+			{
+				spriteBatch.Draw(Assets.Tex["vignetteOverlay"], new Rectangle(0, 0, GameWidth, GameHeight), Color.DarkGreen * (1 - gamestate.player.hunger) * 0.6f);
+			}
+
+			if (gamestate.player.invFrames > 0 && !ImaginationHandler.IsImagination)
 			{
 				spriteBatch.Draw(Assets.Tex["vignetteOverlay"], new Rectangle(0, 0, GameWidth, GameHeight), Color.Red * (gamestate.player.invFrames / 30f));
 			}
+
 
 			spriteBatch.End();
 

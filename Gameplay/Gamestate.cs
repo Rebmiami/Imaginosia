@@ -21,6 +21,9 @@ namespace Imaginosia.Gameplay
 			player = new Player();
 			enemies = new List<Enemy>();
 			projectiles = new List<Projectile>();
+
+			DustManager.dusts.Clear();
+			ImaginationHandler.Reset();
 		}
 
 		public void SpawnEnemy(Vector2 position, int type)
@@ -32,6 +35,8 @@ namespace Imaginosia.Gameplay
 		public void Update()
 		{
 			ImaginationHandler.TimeSinceSwitched++;
+
+			DustManager.Update();
 
 			if (RNG.rand.Next(100) == 0 && enemies.Count < 20)
 			{
@@ -47,13 +52,18 @@ namespace Imaginosia.Gameplay
 			}
 
 
-			if (KeyHelper.Pressed(Keys.T) && (player.hallucinogen > 0 || ImaginationHandler.IsImagination))
+			if (KeyHelper.Pressed(Keys.T) && ((player.hallucinogen > 0 && player.hunger > 1f) || ImaginationHandler.IsImagination))
 			{
 				if (!ImaginationHandler.IsImagination)
 				{
 					player.hallucinogen--;
 				}	
 				ImaginationHandler.SwitchImagination();
+			}
+
+			if (ImaginationHandler.IsImagination && player.hunger < 1f)
+			{
+				ImaginationHandler.LeaveImagination();
 			}
 
 			player.Update();
@@ -95,7 +105,7 @@ namespace Imaginosia.Gameplay
 			spriteBatcher.Begin(samplerState: SamplerState.PointClamp);
 			player.Draw(spriteBatcher);
 
-			bool debug = true;
+			bool debug = false;
 
 			if (debug)
 				HitboxVisualization.DrawEntityHitbox(player, spriteBatcher);
@@ -125,6 +135,8 @@ namespace Imaginosia.Gameplay
 			}
 			if (debug)
 				TextPrinter.Print("Special Tile", PositionHelper.ToScreenPosition(MouseHelper.MouseTileHover.ToVector2()), spriteBatcher);
+
+			DustManager.Draw(spriteBatcher, 0);
 
 			spriteBatcher.End();
 		}

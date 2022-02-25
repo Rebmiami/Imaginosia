@@ -1,8 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Imaginosia.Gameplay;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Imaginosia.Graphics
 {
@@ -11,7 +9,6 @@ namespace Imaginosia.Graphics
 		public Vector2 position;
 		public Vector2 velocity;
 		public int type;
-		public int frame;
 		public Color color;
 
 		public float opacity;
@@ -20,12 +17,12 @@ namespace Imaginosia.Graphics
 
 		public int timeLeft;
 		public int maxTime;
+		public int layer;
 
 		public bool noRotate = false;
 		public bool noGravity = false;
 		public bool noFade = false;
-		public bool backGround = false;
-		public int flash = 0;
+		public bool gameLayer = false;
 
 		public Dust(Vector2 position, Vector2 velocity, float randomVel, int type)
 		{
@@ -33,11 +30,57 @@ namespace Imaginosia.Graphics
 			this.velocity = velocity;
 			this.velocity += RNG.RotateRandom(new Vector2(randomVel / 2, 0), 360, randomVel);
 			this.type = type;
-			frame = RNG.rand.Next(3);
 
 			color = Color.White;
 			opacity = 1;
 			scale = 1;
+
+			switch (type)
+			{
+				case 0:
+					gameLayer = true;
+					maxTime = 20;
+					noFade = true;
+					break;
+				case 1:
+				case 2:
+					gameLayer = true;
+					color = new Color(255, 255, 255, 0);
+					noGravity = true;
+					maxTime = 20;
+					break;
+				case 3:
+					gameLayer = true;
+					color = new Color(255, 255, 255, 0);
+					noGravity = true;
+					maxTime = 60;
+					noFade = true;
+					break;
+				case 4:
+					gameLayer = true;
+					maxTime = 180;
+					noGravity = true;
+					scale = 2;
+					break;
+				case 5:
+					maxTime = 40;
+					noFade = true;
+					layer = 1;
+					noGravity = true;
+					break;
+				case 6:
+				case 7:
+				case 8:
+				case 9:
+				case 10:
+				case 11:
+					gameLayer = true;
+					maxTime = 20;
+					noFade = true;
+					break;
+				default:
+					break;
+			}
 
 			timeLeft = maxTime;
 		}
@@ -56,11 +99,6 @@ namespace Imaginosia.Graphics
 			if (!noRotate)
 			{
 				rotation += velocity.X / 10f;
-			}
-
-			if (flash > 0)
-			{
-				flash--;
 			}
 
 			position += velocity;
@@ -90,8 +128,16 @@ namespace Imaginosia.Graphics
 				opacity = (float)timeLeft / maxTime;
 			}
 			effectiveScale *= scale;
-			Effect[] effects = null;
-			spriteBatcher.Draw(Assets.Tex2["dust"].texture, PositionHelper.ToScreenPosition(position), Assets.Tex2["dust"].frames[type], color, rotation, new Vector2(5), 1, SpriteEffects.None, 0);
+
+			Vector2 drawPosition = position;
+
+			if (gameLayer)
+			{
+				position = PositionHelper.ToScreenPosition(position);
+			}
+
+
+			spriteBatcher.Draw(Assets.Tex2["dust"].texture, drawPosition, Assets.Tex2["dust"].frames[type + (ImaginationHandler.IsImagination ? 12 : 0)], color, rotation, new Vector2(5), effectiveScale, SpriteEffects.None, 0);
 		}
 	}
 }

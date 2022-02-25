@@ -86,7 +86,7 @@ namespace Imaginosia
 
 		public static Vector2 Position
 		{
-			get => Mouse.GetState().Position.ToVector2() / Game1.ScreenScalingFactor + Game1.ScreenOriginOffset.ToVector2();
+			get => Mouse.GetState().Position.ToVector2() / Game1.ScreenScalingFactor - Game1.ScreenOriginOffset.ToVector2() / 2;
 		}
 
 		public static Point MouseTileHover
