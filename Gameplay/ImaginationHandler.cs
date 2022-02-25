@@ -32,6 +32,7 @@ namespace Imaginosia.Gameplay
 		{
 			DustManager.CreateDustPuff(new FloatRectangle(0, 0, Game1.GameWidth, Game1.GameHeight), Microsoft.Xna.Framework.Vector2.Zero, 1, 5, 1000);
 			TimeSinceSwitched = 0;
+			Game1.ScreenShake = 8;
 		}
 
 		public static void SwitchImagination()

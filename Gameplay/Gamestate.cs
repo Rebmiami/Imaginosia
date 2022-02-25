@@ -52,7 +52,7 @@ namespace Imaginosia.Gameplay
 			}
 
 
-			if (KeyHelper.Pressed(Keys.T) && ((player.hallucinogen > 0 && player.hunger > 1f) || ImaginationHandler.IsImagination))
+			if (KeyHelper.Pressed(Keys.T) && ((player.hallucinogen > 0 && player.hunger > 5f) || ImaginationHandler.IsImagination))
 			{
 				if (!ImaginationHandler.IsImagination)
 				{

@@ -649,9 +649,9 @@ namespace Imaginosia.Gameplay
 
 				SingleAction:
 
-				if (MouseHelper.Pressed(MouseButton.Right) && inventory[0].CanUseItem())
+				if (MouseHelper.Pressed(MouseButton.Right))
 				{
-					if (inventory[0].usesLeft > 0)
+					if ((inventory[0].CanUseItem() && inventory[0].usesLeft > 0 && !ImaginationHandler.IsImagination) || (inventory[0].CanUseItem() && ImaginationHandler.IsImagination))
 					{
 						inventory[0].UseItem();
 
@@ -673,11 +673,49 @@ namespace Imaginosia.Gameplay
 								timeLeft = 16,
 								knockback = 1
 							};
+							Game1.ScreenShake = 4;
 						}
 					}
 					else
 					{
+						int firstBoneKnife = 3;
+						for (int i = firstBoneKnife; i < inventorySize; i++)
+						{
+							if (inventory[i] != null && inventory[i].itemID == ItemType.BoneKnife && inventory[i].CanUseItem())
+							{
+								break;
+							}
+							firstBoneKnife++;
+						}
 
+						if (firstBoneKnife < inventorySize)
+						{
+							Item knife = inventory[firstBoneKnife];
+							knife.UseItem();
+							if (knife.stackCount <= 0)
+							{
+								inventory[firstBoneKnife] = null;
+							}
+
+							if (ImaginationHandler.IsImagination)
+							{
+								new Projectile(position, gameDirection * 0.4f, 8, 4)
+								{
+									updateRes = 1,
+									timeLeft = 24,
+									knockback = 0.5f
+								};
+							}
+							else
+							{
+								new Projectile(position, gameDirection * 0.6f, 2, 1)
+								{
+									updateRes = 1,
+									timeLeft = 16,
+									knockback = 0.5f
+								};
+							}
+						}
 					}
 				}
 
@@ -767,6 +805,7 @@ namespace Imaginosia.Gameplay
 				damage++;
 				clothing -= damage;
 			}
+			Game1.ScreenShake = damage;
 
 			health -= damage;
 			// DrawHandler.screenShake += 4;
@@ -832,7 +871,7 @@ namespace Imaginosia.Gameplay
 			if (equippedBag)
 			spriteBatcher.Draw(Assets.Tex2["player"].texture, ScreenPosition - new Vector2(8.5f, 8), Assets.Tex2["player"].frames[baseFrame + 8], Color.White, 0, dimensions / 2, 1, direction.X > 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
 
-			if (HeldItem != null && HeldItem.itemID == ItemType.Gun || (inventory[0].useTime > 0))
+			if ((HeldItem != null && HeldItem.itemID == ItemType.Gun || (inventory[0].useTime > 0)) && !(inventory[1].useTime > 0))
 			{
 				float rotation = (float)Math.Atan2(direction.Y, direction.X);
 				int holdDir = direction.X > 0 ? 1 : -1;

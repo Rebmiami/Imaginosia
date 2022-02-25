@@ -112,6 +112,13 @@ namespace Imaginosia
 
 			destination.Location = ScreenOriginOffset;
 
+			if (ScreenShake > 0)
+			{
+				destination.Location += (RNG.RotateRandom(Vector2.UnitX, 360) * ScreenShake).ToPoint();
+				ScreenShake--;
+			}
+
+
 
 
 

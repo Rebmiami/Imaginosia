@@ -103,9 +103,9 @@ namespace Imaginosia.Graphics
 				TextPrinter.Print(player.HeldItem.GetName(), new Vector2(20, 200), spriteBatcher, background: true);
 			}
 
-			if (player.hallucinogen > 0)
+			if (player.hallucinogen > 0 && !ImaginationHandler.IsImagination)
 			{
-				if (player.hunger > 1f)
+				if (player.hunger > 5f)
 				{
 					TextPrinter.Print("Press T to imagine", new Vector2(290, 26), spriteBatcher, background: true);
 				}
