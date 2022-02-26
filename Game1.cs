@@ -72,29 +72,42 @@ namespace Imaginosia
 			Assets.Sfx["ambience2"] = Content.Load<SoundEffect>("SFX/AmbienceBell");
 			Assets.Sfx["ambience3"] = Content.Load<SoundEffect>("SFX/AmbiencePiano");
 			Assets.Sfx["ambience4"] = Content.Load<SoundEffect>("SFX/AmbienceScream");
-			Assets.Sfx["ambience4"] = Content.Load<SoundEffect>("SFX/AmbienceChanting");
-			Assets.Sfx["ambience5"] = Content.Load<SoundEffect>("SFX/AmbienceCymbals");
+			Assets.Sfx["ambience5"] = Content.Load<SoundEffect>("SFX/AmbienceChanting");
+			Assets.Sfx["ambience6"] = Content.Load<SoundEffect>("SFX/AmbienceCymbals");
 
 			Assets.Sfx["treeHit"] = Content.Load<SoundEffect>("SFX/TreeHit");
 			Assets.Sfx["treeBreak"] = Content.Load<SoundEffect>("SFX/TreeBreak");
 			Assets.Sfx["gunshot"] = Content.Load<SoundEffect>("SFX/PlayerGunshot");
 			Assets.Sfx["footstepReal"] = Content.Load<SoundEffect>("SFX/PlayerFootstepReal");
 
+			Assets.Sfx["wandShotImaginary"] = Content.Load<SoundEffect>("SFX/WandShotImaginary");
+			Assets.Sfx["foodEatImaginary"] = Content.Load<SoundEffect>("SFX/FoodEatImaginary");
+			Assets.Sfx["boneEatImaginary"] = Content.Load<SoundEffect>("SFX/BoneEatImaginary");
+
 			Assets.Sfx["wolfGrowlReal"] = Content.Load<SoundEffect>("SFX/WolfGrowlReal");
 			Assets.Sfx["wolfBarkReal"] = Content.Load<SoundEffect>("SFX/WolfBarkReal");
 			Assets.Sfx["wolfWhimperReal"] = Content.Load<SoundEffect>("SFX/WolfWhimperReal");
 			Assets.Sfx["wolfDeathReal"] = Content.Load<SoundEffect>("SFX/WolfDeathReal");
+			Assets.Sfx["wolfPingImaginary"] = Content.Load<SoundEffect>("SFX/WolfPingImaginary");
 
 			Assets.Sfx["ratDeathReal"] = Content.Load<SoundEffect>("SFX/RatDeathReal");
 			Assets.Sfx["ratHurtReal"] = Content.Load<SoundEffect>("SFX/RatHurtReal");
 			Assets.Sfx["ratLaserImaginary"] = Content.Load<SoundEffect>("SFX/RatLaserImaginary");
+			Assets.Sfx["ratLaughImaginary"] = Content.Load<SoundEffect>("SFX/RatLaughImaginary");
 
 			Assets.Sfx["bearSleepReal"] = Content.Load<SoundEffect>("SFX/BearSleepReal");
 			Assets.Sfx["bearStirReal"] = Content.Load<SoundEffect>("SFX/BearStirReal");
-			Assets.Sfx["bearGruntReal"] = Content.Load<SoundEffect>("SFX/BearStirReal");
+			Assets.Sfx["bearGruntReal"] = Content.Load<SoundEffect>("SFX/BearGruntReal");
 
+			Assets.Sfx["imaginationPrelude"] = Content.Load<SoundEffect>("SFX/ImaginationPrelude");
 			Assets.Sfx["imaginationJingle"] = Content.Load<SoundEffect>("SFX/ImaginationTransition");
 			Assets.Sfx["realWorldJingle"] = Content.Load<SoundEffect>("SFX/RealTransition");
+
+			Assets.Sfx["enemyHurtReal"] = Content.Load<SoundEffect>("SFX/AnimalHitReal");
+			Assets.Sfx["playerHurtImaginary"] = Content.Load<SoundEffect>("SFX/PlayerHurtImaginary");
+			Assets.Sfx["enemyHurtImaginary"] = Content.Load<SoundEffect>("SFX/AnimalHitImaginary");
+			Assets.Sfx["enemyPopImaginary"] = Content.Load<SoundEffect>("SFX/EnemyPopImaginary");
+			Assets.Sfx["swoosh"] = Content.Load<SoundEffect>("SFX/Swoosh");
 
 			Assets.Sfx["mushroom"] = Content.Load<SoundEffect>("SFX/Mushroom");
 
@@ -213,6 +226,10 @@ namespace Imaginosia
 				spriteBatch.Draw(Assets.Tex["vignetteOverlay"], new Rectangle(0, 0, GameWidth, GameHeight), Color.Red * (gamestate.player.invFrames / 30f));
 			}
 
+			if (ImaginationHandler.TransitionTimer > 0)
+			{
+				spriteBatch.Draw(Assets.Tex["special"], new Rectangle(0, 0, GameWidth, GameHeight), Color.White * ((60 - ImaginationHandler.TransitionTimer) / 60f));
+			}
 
 			spriteBatch.End();
 

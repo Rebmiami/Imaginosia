@@ -1,4 +1,5 @@
-﻿using Imaginosia.Graphics;
+﻿using Imaginosia.Audio;
+using Imaginosia.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -266,6 +267,8 @@ namespace Imaginosia.Gameplay
 						MouseText = "Click to scavenge";
 						if (MouseHelper.Pressed(MouseButton.Left))
 						{
+							SoundSystem.PlayAtPosition(Center, toScavenge.Center, "enemyHurtReal", true);
+
 							inventory[1].UseItem();
 							toScavenge.remove = true;
 							Game1.gamestate.world.PlaceItemNearest(toScavenge.Center.ToPoint(), ref toScavenge.carryingItem);
@@ -372,6 +375,24 @@ namespace Imaginosia.Gameplay
 					if (canInteractTile)
 					{
 						MouseText = "Click to chop tree";
+						if (MouseHelper.Pressed(MouseButton.Left))
+						{
+							HeldItem.UseItem();
+							hoverTile.Damage(MouseHelper.MouseTileHover);
+						}
+					}
+					else
+					{
+						MouseText = "Cannot reach";
+					}
+					goto SingleAction;
+				}
+
+				if (hoverTile.floorObjectType == FloorObjectType.Fence && HeldItem != null && HeldItem.itemID == ItemType.Axe && HeldItem.CanUseItem())
+				{
+					if (canInteractTile)
+					{
+						MouseText = "Click to chop fence";
 						if (MouseHelper.Pressed(MouseButton.Left))
 						{
 							HeldItem.UseItem();
@@ -561,15 +582,6 @@ namespace Imaginosia.Gameplay
 							{
 								HeldItem = null;
 							}
-
-							if (ImaginationHandler.IsImagination)
-							{
-								magic += 2;
-							}
-							else
-							{
-								hunger += 0.5f;
-							}
 						}
 						goto SingleAction;
 					}
@@ -582,15 +594,6 @@ namespace Imaginosia.Gameplay
 							if (HeldItem.stackCount <= 0)
 							{
 								HeldItem = null;
-							}
-
-							if (ImaginationHandler.IsImagination)
-							{
-								magic += 10;
-							}
-							else
-							{
-								hunger += 2f;
 							}
 						}
 						goto SingleAction;
@@ -605,7 +608,6 @@ namespace Imaginosia.Gameplay
 							{
 								HeldItem = null;
 							}
-							health += 2;
 						}
 						goto SingleAction;
 					}
@@ -754,6 +756,7 @@ namespace Imaginosia.Gameplay
 
 						if (firstBoneKnife < inventorySize)
 						{
+							Assets.Sfx["swoosh"].Play(0.3f, 0, 0);
 							Item knife = inventory[firstBoneKnife];
 							knife.UseItem();
 							if (knife.stackCount <= 0)
@@ -786,6 +789,7 @@ namespace Imaginosia.Gameplay
 
 				if (MouseHelper.Pressed(MouseButton.Left) && inventory[1].CanUseItem() && canUseKnife)
 				{
+					Assets.Sfx["swoosh"].Play(0.3f, 0, 0);
 					inventory[1].UseItem();
 					if (ImaginationHandler.IsImagination && health == 10)
 					{
@@ -798,6 +802,33 @@ namespace Imaginosia.Gameplay
 					}
 				}
 
+			}
+
+			if (KeyHelper.Pressed(Keys.C))
+			{
+				int firstConsumable = 3;
+				for (int i = firstConsumable; i < inventorySize; i++)
+				{
+					if (inventory[i] != null && (inventory[i].itemID == ItemType.MeatCooked || inventory[i].itemID == ItemType.MeatRaw))
+					{
+						break;
+					}
+					if (inventory[i] != null && inventory[i].itemID == ItemType.Bone && ImaginationHandler.IsImagination)
+					{
+						break;
+					}
+					firstConsumable++;
+				}
+
+				if (firstConsumable < inventorySize)
+				{
+					Item consumable = inventory[firstConsumable];
+					consumable.UseItem();
+					if (consumable.stackCount <= 0)
+					{
+						inventory[firstConsumable] = null;
+					}
+				}
 			}
 
 			if (inventory[1].useTime > 0)
@@ -875,6 +906,11 @@ namespace Imaginosia.Gameplay
 			// DrawHandler.screenShake += 4;
 			invFrames = 30;
 			// UIHandler.hitFlash = 10;
+			if (ImaginationHandler.IsImagination)
+			{
+				Assets.Sfx["playerHurtImaginary"].Play();
+			}
+
 			CheckDead();
 		}
 

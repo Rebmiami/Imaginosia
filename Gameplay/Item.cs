@@ -84,6 +84,7 @@ namespace Imaginosia.Gameplay
 					break;
 				case ItemType.Bone:
 					stackable = true;
+					consumable = true; // It can only be eaten in the Imagination
 					maxStack = 15;
 					break;
 				case ItemType.BoneKnife:
@@ -150,13 +151,76 @@ namespace Imaginosia.Gameplay
 				}
 			}
 
-			
+
+			switch (itemID)
+			{
+				case ItemType.Gun:
+					if (ImaginationHandler.IsImagination)
+					{
+						Assets.Sfx["wandShotImaginary"].Play();
+					}
+					else
+					{
+						// Assets.Sfx["foodEatImaginary"].Play();
+					}
+					break;
+				case ItemType.Knife:
+					break;
+				case ItemType.Axe:
+					break;
+				case ItemType.Matchbox:
+					break;
+				case ItemType.MeatRaw:
+					if (ImaginationHandler.IsImagination)
+					{
+						Game1.gamestate.player.magic += 2;
+						Assets.Sfx["foodEatImaginary"].Play();
+					}
+					else
+					{
+						Game1.gamestate.player.hunger += 0.5f;
+					}
+					break;
+				case ItemType.MeatCooked:
+					if (ImaginationHandler.IsImagination)
+					{
+						Game1.gamestate.player.magic += 10;
+						Assets.Sfx["foodEatImaginary"].Play();
+					}
+					else
+					{
+						Game1.gamestate.player.hunger += 2f;
+					}
+					break;
+				case ItemType.Fur:
+					break;
+				case ItemType.Clothes:
+					break;
+				case ItemType.Bag:
+					break;
+				case ItemType.Bone:
+					Game1.gamestate.player.health += 2;
+					Assets.Sfx["boneEatImaginary"].Play();
+					break;
+				case ItemType.BoneKnife:
+					break;
+				case ItemType.BoneTrap:
+					break;
+				case ItemType.Wood:
+					break;
+				case ItemType.WoodStake:
+					break;
+				default:
+					break;
+			}
+
 			if (stackable)
 			{
 				stackCount--;
 				if (stackCount <= 0)
 					return false;
 			}
+
 			return true;
 		}
 

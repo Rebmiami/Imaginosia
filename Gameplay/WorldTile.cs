@@ -1,4 +1,5 @@
 ﻿using Imaginosia.Audio;
+using Imaginosia.Graphics;
 using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
@@ -58,13 +59,35 @@ namespace Imaginosia.Gameplay
 				floorObjectHealth--;
 
 				SoundSystem.PlayAtPosition(Game1.gamestate.player.position, point.ToVector2(), "treeHit", true);
+
+				DustManager.CreateDustPuff(new FloatRectangle(point.ToVector2(), Vector2.One), Vector2.Zero, 0.1f, 10, 8);
+			}
+			if (floorObjectType == FloorObjectType.Fence)
+			{
+
+				floorObjectHealth--;
+
+				SoundSystem.PlayAtPosition(Game1.gamestate.player.position, point.ToVector2(), "treeHit", true);
+				DustManager.CreateDustPuff(new FloatRectangle(point.ToVector2(), Vector2.One), Vector2.Zero, 0.1f, 10, 8);
 			}
 
 
 			if (floorObjectHealth <= 0)
 			{
-				floorObjectType = FloorObjectType.None;
-				SoundSystem.PlayAtPosition(Game1.gamestate.player.position, point.ToVector2(), "treeBreak", true);
+				if (floorObjectType == FloorObjectType.Tree)
+				{
+					SoundSystem.PlayAtPosition(Game1.gamestate.player.position, point.ToVector2(), "treeBreak", true);
+					floorObjectType = FloorObjectType.None;
+				}	
+				if (floorObjectType == FloorObjectType.Fence)
+				{
+					floorObjectType = FloorObjectType.None;
+					Item stake = new Item();
+					stake.itemID = ItemType.WoodStake;
+					stake.SetDefaults();
+					stake.stackCount = 1;
+					Game1.gamestate.world.PlaceItemNearest(point, ref stake);
+				}
 			}
 		}
 

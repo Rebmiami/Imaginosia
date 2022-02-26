@@ -94,7 +94,7 @@ namespace Imaginosia.Graphics
 
 			if (!noGravity)
 			{
-				velocity.Y += 0.1f;
+				velocity.Y += 0.01f;
 			}
 			if (!noRotate)
 			{
@@ -133,11 +133,11 @@ namespace Imaginosia.Graphics
 
 			if (gameLayer)
 			{
-				position = PositionHelper.ToScreenPosition(position);
+				drawPosition = PositionHelper.ToScreenPosition(position);
 			}
 
 
-			spriteBatcher.Draw(Assets.Tex2["dust"].texture, drawPosition, Assets.Tex2["dust"].frames[type + (ImaginationHandler.IsImagination ? 12 : 0)], color, rotation, new Vector2(5), effectiveScale, SpriteEffects.None, 0);
+			spriteBatcher.Draw(Assets.Tex2["dust"].texture, drawPosition, Assets.Tex2["dust"].frames[type + (ImaginationHandler.IsImagination ? 12 : 0)], color, rotation, new Vector2(4), effectiveScale, SpriteEffects.None, 0);
 		}
 	}
 }

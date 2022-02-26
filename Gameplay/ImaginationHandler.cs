@@ -9,8 +9,11 @@ namespace Imaginosia.Gameplay
 	public static class ImaginationHandler
 	{
 		public static bool IsImagination { get; private set; }
+		public static bool Next { get; set; }
 
 		public static int TimeSinceSwitched { get; set; }
+
+		public static int TransitionTimer;
 
 		static ImaginationHandler()
 		{
@@ -44,15 +47,21 @@ namespace Imaginosia.Gameplay
 			Game1.ScreenShake = 8;
 		}
 
+		public static void StartTransition()
+		{
+			Assets.Sfx["imaginationPrelude"].Play();
+			TransitionTimer = 60;
+		}
+
 		public static void SwitchImagination()
 		{
-			if (IsImagination)
+			if (Next)
 			{
-				LeaveImagination();
+				EnterImagination();
 			}
 			else
 			{
-				EnterImagination();
+				LeaveImagination();
 			}
 		}
 

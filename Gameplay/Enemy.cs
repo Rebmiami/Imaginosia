@@ -126,13 +126,13 @@ namespace Imaginosia.Gameplay
 						{
 							item.TakeDamage(20, Vector2.Normalize(item.Center - (Vector2.Floor(Center) + new Vector2(0.5f))));
 
-							DustManager.CreateDustPuff(new FloatRectangle(Vector2.Floor(Center), Vector2.One), Vector2.Zero, 10, 10, 30);
+							DustManager.CreateDustPuff(new FloatRectangle(Vector2.Floor(Center), Vector2.One), Vector2.Zero, 1, 10, 30);
 						}
 					}
 				}
 				else
 				{
-					if (RNG.rand.Next(10) == 0)
+					if (RNG.rand.Next(10) == 0 && hitTimer == 0)
 					{
 						TakeDamage(1, Vector2.Zero); 
 						if (RNG.rand.Next(10) == 0)
@@ -391,7 +391,7 @@ namespace Imaginosia.Gameplay
 								{
 									if (bunnyReloadTimer < 180)
 									{
-										DustManager.CreateDustPuff(Hitbox, Vector2.Zero, 1f, 2, 3);
+										DustManager.CreateDustPuff(Hitbox, Vector2.Zero, 0.1f, 2, 1);
 									}
 
 									if (bunnyReloadTimer > 0)
@@ -408,7 +408,7 @@ namespace Imaginosia.Gameplay
 
 										for (int i = 0; i < Vector2.Distance(Center, Game1.gamestate.player.Center) * 8; i++)
 										{
-											DustManager.NewDust(Vector2.Lerp(Center, Game1.gamestate.player.Center, (float)RNG.rand.NextDouble()), Vector2.Zero, 1f, 3);
+											DustManager.NewDust(Vector2.Lerp(Center, Game1.gamestate.player.Center, (float)RNG.rand.NextDouble()), Vector2.Zero, 0.05f, 3);
 										}
 									}
 								}
@@ -504,6 +504,7 @@ namespace Imaginosia.Gameplay
 
 			if (ImaginationHandler.IsImagination && dead && animationTimer == 0)
 			{
+				Assets.Sfx["enemyPopImaginary"].Play();
 				remove = true;
 				Game1.gamestate.world.PlaceItemNearest(Center.ToPoint(), ref carryingItem);
 
@@ -532,11 +533,23 @@ namespace Imaginosia.Gameplay
 			{
 				soundTimer--;
 			}
-			else
+			else if (!dead)
 			{
 				if (ImaginationHandler.IsImagination)
 				{
-
+					switch (type)
+					{
+						case 0:
+							SoundSystem.PlayAtPosition(Game1.gamestate.player.Center, Center, "wolfPingImaginary");
+							soundTimer = 20 + (int)(Vector2.Distance(Game1.gamestate.player.Center, Center) * 10);
+							break;
+						case 1:
+							SoundSystem.PlayAtPosition(Game1.gamestate.player.Center, Center, "ratLaughImaginary", true);
+							soundTimer = 240 + RNG.rand.Next(60);
+							break;
+						case 2:
+							break;
+					}
 				}
 				else
 				{
@@ -629,6 +642,13 @@ namespace Imaginosia.Gameplay
 			velocity += knockback;
 			bunnyReloadTimer = 360;
 			fear += damage * 50;
+			if (ImaginationHandler.IsImagination)
+			{
+				SoundSystem.PlayAtPosition(Game1.gamestate.player.Center, Center, "enemyHurtImaginary", true);
+			}
+			else
+			{
+			}
 			if (health <= 0)
 			{
 				dead = true;
@@ -656,6 +676,7 @@ namespace Imaginosia.Gameplay
 			}
 			else
 			{
+
 				if (!ImaginationHandler.IsImagination)
 				{
 					switch (type)
@@ -740,6 +761,17 @@ namespace Imaginosia.Gameplay
 
 
 			spriteBatcher.Draw(texture.texture, ScreenPosition - new Vector2(8, 16), texture.frames[animFrame], color, 0, dimensions / 2, 1, direction.X > 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
+		}
+
+		public override void OnTouchFence(Point point)
+		{
+			// Bears can destroy wooden fences to get at your stuff
+			if (type == 2 && RNG.rand.Next(40) == 0)
+			{
+				Game1.gamestate.world.tiles[point.X, point.Y].Damage(point);
+			}
+
+			base.OnTouchFence(point);
 		}
 	}
 }

@@ -211,6 +211,24 @@
 /processorParam:Quality=Best
 /build:SFX/AmbienceWarble.wav
 
+#begin SFX/AnimalHitImaginary.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/AnimalHitImaginary.wav
+
+#begin SFX/AnimalHitReal.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/AnimalHitReal.wav
+
+#begin SFX/BearGruntReal.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/BearGruntReal.wav
+
 #begin SFX/BearSleepReal.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
@@ -222,6 +240,30 @@
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:SFX/BearStirReal.wav
+
+#begin SFX/BoneEatImaginary.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/BoneEatImaginary.wav
+
+#begin SFX/EnemyPopImaginary.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/EnemyPopImaginary.wav
+
+#begin SFX/FoodEatImaginary.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/FoodEatImaginary.wav
+
+#begin SFX/ImaginationPrelude.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/ImaginationPrelude.wav
 
 #begin SFX/ImaginationTransition.wav
 /importer:WavImporter
@@ -253,6 +295,12 @@
 /processorParam:Quality=Best
 /build:SFX/PlayerGunshot.wav
 
+#begin SFX/PlayerHurtImaginary.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/PlayerHurtImaginary.wav
+
 #begin SFX/RatDeathReal.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
@@ -271,11 +319,23 @@
 /processorParam:Quality=Best
 /build:SFX/RatLaserImaginary.wav
 
+#begin SFX/RatLaughImaginary.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/RatLaughImaginary.wav
+
 #begin SFX/RealTransition.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:SFX/RealTransition.wav
+
+#begin SFX/Swoosh.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/Swoosh.wav
 
 #begin SFX/TreeBreak.wav
 /importer:WavImporter
@@ -288,6 +348,12 @@
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:SFX/TreeHit.wav
+
+#begin SFX/WandShotImaginary.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/WandShotImaginary.wav
 
 #begin SFX/WolfBarkReal.wav
 /importer:WavImporter
@@ -306,6 +372,12 @@
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:SFX/WolfGrowlReal.wav
+
+#begin SFX/WolfPingImaginary.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/WolfPingImaginary.wav
 
 #begin SFX/WolfWhimperReal.wav
 /importer:WavImporter

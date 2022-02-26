@@ -37,6 +37,33 @@ namespace Imaginosia.Gameplay
 
 		public void Update()
 		{
+			if (ImaginationHandler.TransitionTimer > 0)
+			{
+				ImaginationHandler.TransitionTimer--;
+				if (ImaginationHandler.TransitionTimer <= 0)
+				{
+					ImaginationHandler.SwitchImagination();
+				}
+				return;
+			}
+
+			if (KeyHelper.Pressed(Keys.T) && ((player.hallucinogen > 0 && player.hunger > 5f) || ImaginationHandler.IsImagination))
+			{
+				if (!ImaginationHandler.IsImagination)
+				{
+					player.hallucinogen--;
+				}
+				ImaginationHandler.Next = !ImaginationHandler.IsImagination;
+				ImaginationHandler.StartTransition();
+			}
+
+			if (ImaginationHandler.IsImagination && player.hunger < 1f)
+			{
+				ImaginationHandler.Next = false;
+				ImaginationHandler.StartTransition();
+			}
+
+
 			if (ambienceTimer > 0)
 			{
 				ambienceTimer--;
@@ -68,19 +95,6 @@ namespace Imaginosia.Gameplay
 			}
 
 
-			if (KeyHelper.Pressed(Keys.T) && ((player.hallucinogen > 0 && player.hunger > 5f) || ImaginationHandler.IsImagination))
-			{
-				if (!ImaginationHandler.IsImagination)
-				{
-					player.hallucinogen--;
-				}	
-				ImaginationHandler.SwitchImagination();
-			}
-
-			if (ImaginationHandler.IsImagination && player.hunger < 1f)
-			{
-				ImaginationHandler.LeaveImagination();
-			}
 
 			player.Update();
 
