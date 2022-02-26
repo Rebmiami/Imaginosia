@@ -175,6 +175,42 @@
 /processorParam:TextureFormat=Color
 /build:RatReal.png
 
+#begin SFX/AmbienceBell.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/AmbienceBell.wav
+
+#begin SFX/AmbienceChanting.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/AmbienceChanting.wav
+
+#begin SFX/AmbienceCymbals.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/AmbienceCymbals.wav
+
+#begin SFX/AmbiencePiano.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/AmbiencePiano.wav
+
+#begin SFX/AmbienceScream.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/AmbienceScream.wav
+
+#begin SFX/AmbienceWarble.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/AmbienceWarble.wav
+
 #begin SFX/BearSleepReal.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
@@ -222,6 +258,12 @@
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:SFX/RatDeathReal.wav
+
+#begin SFX/RatHurtReal.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/RatHurtReal.wav
 
 #begin SFX/RatLaserImaginary.wav
 /importer:WavImporter

@@ -15,6 +15,8 @@ namespace Imaginosia.Gameplay
 		public List<Enemy> enemies;
 		public List<Projectile> projectiles;
 
+		int ambienceTimer;
+
 		public Gamestate()
 		{
 			world = World.GenerateNew();
@@ -24,6 +26,7 @@ namespace Imaginosia.Gameplay
 
 			DustManager.dusts.Clear();
 			ImaginationHandler.Reset();
+			ambienceTimer = 3600 + RNG.rand.Next(3600);
 		}
 
 		public void SpawnEnemy(Vector2 position, int type)
@@ -34,6 +37,19 @@ namespace Imaginosia.Gameplay
 
 		public void Update()
 		{
+			if (ambienceTimer > 0)
+			{
+				ambienceTimer--;
+			}
+			else
+			{
+				if (!ImaginationHandler.IsImagination)
+				{
+					Assets.Sfx["ambience" + (RNG.rand.Next(6) + 1)].Play();
+				}
+				ambienceTimer = 3600 + RNG.rand.Next(3600);
+			}
+
 			ImaginationHandler.TimeSinceSwitched++;
 
 			DustManager.Update();

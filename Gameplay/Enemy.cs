@@ -124,7 +124,9 @@ namespace Imaginosia.Gameplay
 					{
 						if (Vector2.Distance(Vector2.Floor(Center) + new Vector2(0.5f), item.Center) < 5f)
 						{
-							item.TakeDamage(20, Vector2.Normalize(item.Center - Vector2.Floor(Center) + new Vector2(0.5f)));
+							item.TakeDamage(20, Vector2.Normalize(item.Center - (Vector2.Floor(Center) + new Vector2(0.5f))));
+
+							DustManager.CreateDustPuff(new FloatRectangle(Vector2.Floor(Center), Vector2.One), Vector2.Zero, 10, 10, 30);
 						}
 					}
 				}
@@ -336,6 +338,13 @@ namespace Imaginosia.Gameplay
 							if (RNG.rand.Next(15) == 1)
 							{
 								drive--;
+							}
+
+							// Scared rats should still steal
+							if (carryingItem == null && type == 1 && standTile.floorItem != null)
+							{
+								carryingItem = standTile.TakeItem();
+								state = EnemyState.Flee;
 							}
 
 							break;
@@ -658,6 +667,7 @@ namespace Imaginosia.Gameplay
 							// SoundSystem.PlayAtPosition(Game1.gamestate.player.Center, Center, "ratDeathReal", true);
 							break;
 						case 2:
+							SoundSystem.PlayAtPosition(Game1.gamestate.player.Center, Center, "bearGruntReal", true);
 							break;
 					}
 				}

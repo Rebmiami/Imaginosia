@@ -68,6 +68,13 @@ namespace Imaginosia
 			Assets.Tex["special"] = new Texture2D(GraphicsDevice, 1, 1);
 			Assets.Tex["special"].SetData(new Color[] { Color.White });
 
+			Assets.Sfx["ambience1"] = Content.Load<SoundEffect>("SFX/AmbienceWarble");
+			Assets.Sfx["ambience2"] = Content.Load<SoundEffect>("SFX/AmbienceBell");
+			Assets.Sfx["ambience3"] = Content.Load<SoundEffect>("SFX/AmbiencePiano");
+			Assets.Sfx["ambience4"] = Content.Load<SoundEffect>("SFX/AmbienceScream");
+			Assets.Sfx["ambience4"] = Content.Load<SoundEffect>("SFX/AmbienceChanting");
+			Assets.Sfx["ambience5"] = Content.Load<SoundEffect>("SFX/AmbienceCymbals");
+
 			Assets.Sfx["treeHit"] = Content.Load<SoundEffect>("SFX/TreeHit");
 			Assets.Sfx["treeBreak"] = Content.Load<SoundEffect>("SFX/TreeBreak");
 			Assets.Sfx["gunshot"] = Content.Load<SoundEffect>("SFX/PlayerGunshot");
@@ -79,10 +86,12 @@ namespace Imaginosia
 			Assets.Sfx["wolfDeathReal"] = Content.Load<SoundEffect>("SFX/WolfDeathReal");
 
 			Assets.Sfx["ratDeathReal"] = Content.Load<SoundEffect>("SFX/RatDeathReal");
+			Assets.Sfx["ratHurtReal"] = Content.Load<SoundEffect>("SFX/RatHurtReal");
 			Assets.Sfx["ratLaserImaginary"] = Content.Load<SoundEffect>("SFX/RatLaserImaginary");
 
 			Assets.Sfx["bearSleepReal"] = Content.Load<SoundEffect>("SFX/BearSleepReal");
 			Assets.Sfx["bearStirReal"] = Content.Load<SoundEffect>("SFX/BearStirReal");
+			Assets.Sfx["bearGruntReal"] = Content.Load<SoundEffect>("SFX/BearStirReal");
 
 			Assets.Sfx["imaginationJingle"] = Content.Load<SoundEffect>("SFX/ImaginationTransition");
 			Assets.Sfx["realWorldJingle"] = Content.Load<SoundEffect>("SFX/RealTransition");

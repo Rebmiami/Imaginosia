@@ -48,7 +48,7 @@ namespace Imaginosia.Gameplay
 			{
 				WallCollide();
 			}
-			if (!(this is Projectile))
+			if (!(this is Projectile) && velocity != Vector2.Zero)
 			FenceCollide();
 		}
 

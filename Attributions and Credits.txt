@@ -1,0 +1,19 @@
+﻿Imaginosia by Rebmiami - Submission to the 2022.1 Brackeys Game Jam
+
+Thanks to my friends Northernite and Excess (screen names) for helping me with this project, and thanks to the Brackeys Discord community for providing valuable feedback and motivation! I wouldn't have been able to do it without them.
+
+This game uses these sounds from freesound:
+https://freesound.org/people/okieactor/sounds/415912/
+https://freesound.org/people/monte32/sounds/353799/
+https://freesound.org/people/Nivatius/sounds/519599/
+https://freesound.org/people/tbsounddesigns/sounds/416858/
+https://freesound.org/people/tbsounddesigns/sounds/416849/
+https://freesound.org/people/Animadierer/sounds/516277/
+https://freesound.org/people/Reitanna/sounds/217767/
+https://freesound.org/people/egomassive/sounds/536753/
+https://freesound.org/people/Peacewaves/sounds/317663/
+https://freesound.org/people/be-steele/sounds/369577/
+https://freesound.org/people/EminYILDIRIM/sounds/547369/
+https://freesound.org/people/newagesoup/sounds/338674/
+
+All sounds not listed above and all visual assets were made specifically for this game and are licensed under CC-BY 4.0. Stating the name of the original project is sufficient attribution regardless of which assets were used.
