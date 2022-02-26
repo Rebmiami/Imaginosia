@@ -60,5 +60,10 @@ namespace Imaginosia.Graphics
 				dust.Draw(spriteBatcher);
 			}
 		}
+
+		internal static void NewDust(object p, Vector2 zero, float v1, int v2)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

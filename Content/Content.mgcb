@@ -175,6 +175,66 @@
 /processorParam:TextureFormat=Color
 /build:RatReal.png
 
+#begin SFX/BearSleepReal.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/BearSleepReal.wav
+
+#begin SFX/BearStirReal.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/BearStirReal.wav
+
+#begin SFX/ImaginationTransition.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/ImaginationTransition.wav
+
+#begin SFX/MenuClick.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/MenuClick.wav
+
+#begin SFX/Mushroom.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/Mushroom.wav
+
+#begin SFX/PlayerFootstepReal.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/PlayerFootstepReal.wav
+
+#begin SFX/PlayerGunshot.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/PlayerGunshot.wav
+
+#begin SFX/RatDeathReal.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/RatDeathReal.wav
+
+#begin SFX/RatLaserImaginary.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/RatLaserImaginary.wav
+
+#begin SFX/RealTransition.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/RealTransition.wav
+
 #begin SFX/TreeBreak.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
@@ -186,6 +246,30 @@
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:SFX/TreeHit.wav
+
+#begin SFX/WolfBarkReal.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/WolfBarkReal.wav
+
+#begin SFX/WolfDeathReal.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/WolfDeathReal.wav
+
+#begin SFX/WolfGrowlReal.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/WolfGrowlReal.wav
+
+#begin SFX/WolfWhimperReal.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/WolfWhimperReal.wav
 
 #begin SpriteFont.png
 /importer:TextureImporter

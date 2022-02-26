@@ -1,4 +1,5 @@
 ﻿using Imaginosia.Graphics;
+using Microsoft.Xna.Framework.Audio;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -20,12 +21,20 @@ namespace Imaginosia.Gameplay
 		{
 			IsImagination = true;
 			ImaginationChanged();
+
+			// Revealing all enemies at the start helps with the steady increase in difficulty
+			foreach (var item in Game1.gamestate.enemies)
+			{
+				item.spotted = true;
+			}
+			Assets.Sfx["imaginationJingle"].Play();
 		}
 
 		public static void LeaveImagination()
 		{
 			IsImagination = false;
 			ImaginationChanged();
+			Assets.Sfx["realWorldJingle"].Play();
 		}
 
 		private static void ImaginationChanged()

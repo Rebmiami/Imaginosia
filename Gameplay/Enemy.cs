@@ -1,4 +1,5 @@
-﻿using Imaginosia.Graphics;
+﻿using Imaginosia.Audio;
+using Imaginosia.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -40,6 +41,8 @@ namespace Imaginosia.Gameplay
 		public int spotTimer;
 
 		public int soundTimer;
+
+		public int bunnyReloadTimer;
 
 		public virtual void Spawn(Vector2 position, int type)
 		{
@@ -107,6 +110,35 @@ namespace Imaginosia.Gameplay
 			if (playerDistance < 6)
 			{
 				spotted = true;
+			}
+
+			WorldTile standTile = Game1.gamestate.world.tiles[Math.Clamp((int)Center.X, 0, World.WorldWidth - 1), Math.Clamp((int)Center.Y, 0, World.WorldHeight - 1)];
+
+			if (standTile.floorObjectType == FloorObjectType.BoneTrap)
+			{
+				if (ImaginationHandler.IsImagination)
+				{
+					standTile.floorObjectType = FloorObjectType.None;
+
+					foreach (var item in Game1.gamestate.enemies)
+					{
+						if (Vector2.Distance(Vector2.Floor(Center) + new Vector2(0.5f), item.Center) < 5f)
+						{
+							item.TakeDamage(20, Vector2.Normalize(item.Center - Vector2.Floor(Center) + new Vector2(0.5f)));
+						}
+					}
+				}
+				else
+				{
+					if (RNG.rand.Next(10) == 0)
+					{
+						TakeDamage(1, Vector2.Zero); 
+						if (RNG.rand.Next(10) == 0)
+						{
+							standTile.floorObjectType = FloorObjectType.None;
+						}
+					}
+				}
 			}
 
 
@@ -226,9 +258,9 @@ namespace Imaginosia.Gameplay
 								drive--;
 							}
 
-							if (Game1.gamestate.world.tiles[(int)Center.X, (int)Center.Y].floorItem != null)
+							if (standTile.floorItem != null)
 							{
-								carryingItem = Game1.gamestate.world.tiles[(int)Center.X, (int)Center.Y].TakeItem();
+								carryingItem = standTile.TakeItem();
 								state = EnemyState.Flee;
 							}
 
@@ -256,9 +288,9 @@ namespace Imaginosia.Gameplay
 								drive--;
 							}
 
-							if (Game1.gamestate.world.tiles[(int)Center.X, (int)Center.Y].floorItem != null)
+							if (standTile.floorItem != null)
 							{
-								carryingItem = Game1.gamestate.world.tiles[(int)Center.X, (int)Center.Y].TakeItem();
+								carryingItem = standTile.TakeItem();
 								state = EnemyState.Flee;
 							}
 
@@ -325,16 +357,13 @@ namespace Imaginosia.Gameplay
 							break;
 						case EnemyState.Wander:
 							velocity = direction * speed * 0.5f;
-							// if (attention == 0)
-							// {
-							// 	direction = MathTools.RotateVector(Vector2.UnitX, RNG.rand.NextDouble() * MathHelper.TwoPi);
-							// 	attention = RNG.rand.Next(300) + 60;
-							// }
+
 							if (playerDistance < ImaginationHandler.TimeSinceSwitched / 60f + 10)
 							{
 								GetNewInterest();
 								state = EnemyState.Attack;
 								attention = RNG.rand.Next(60) + 60;
+								bunnyReloadTimer = 240;
 							}
 
 							break;
@@ -346,6 +375,46 @@ namespace Imaginosia.Gameplay
 
 						case EnemyState.Attack:
 							velocity = direction * speed;
+
+							if (type == 1)
+							{
+								if (spotted)
+								{
+									if (bunnyReloadTimer < 180)
+									{
+										DustManager.CreateDustPuff(Hitbox, Vector2.Zero, 1f, 2, 3);
+									}
+
+									if (bunnyReloadTimer > 0)
+									{
+										bunnyReloadTimer--;
+									}
+									else if (Vector2.Distance(Center, Game1.gamestate.player.Center) < 6f)
+									{
+										bunnyReloadTimer = 360;
+										int damage = 3;
+										Game1.gamestate.player.Hit(damage, this, velocity);
+										SoundSystem.PlayAtPosition(Game1.gamestate.player.Center, Center, "ratLaserImaginary", true);
+
+
+										for (int i = 0; i < Vector2.Distance(Center, Game1.gamestate.player.Center) * 8; i++)
+										{
+											DustManager.NewDust(Vector2.Lerp(Center, Game1.gamestate.player.Center, (float)RNG.rand.NextDouble()), Vector2.Zero, 1f, 3);
+										}
+									}
+								}
+							}
+							else
+							{
+								if (Game1.gamestate.player.Hitbox.Intersects(Hitbox))
+								{
+									int damage = 1;
+									if (type == 2)
+										damage = 2;
+
+									Game1.gamestate.player.Hit(damage, this, velocity);
+								}
+							}
 
 							break;
 
@@ -450,6 +519,73 @@ namespace Imaginosia.Gameplay
 				Game1.gamestate.world.PlaceItemNearest(Center.ToPoint(), ref item);
 			}
 
+			if (soundTimer > 0)
+			{
+				soundTimer--;
+			}
+			else
+			{
+				if (ImaginationHandler.IsImagination)
+				{
+
+				}
+				else
+				{
+					switch (type)
+					{
+						case 0:
+							switch (state)
+							{
+								case EnemyState.Wander:
+									break;
+								case EnemyState.Sneak:
+									SoundSystem.PlayAtPosition(Game1.gamestate.player.Center, Center, "wolfGrowlReal", true);
+									soundTimer = 240 + RNG.rand.Next(60);
+									break;
+								case EnemyState.Attack:
+									SoundSystem.PlayAtPosition(Game1.gamestate.player.Center, Center, "wolfBarkReal", true);
+									soundTimer = 120 + RNG.rand.Next(60);
+									break;
+								case EnemyState.Flee:
+									break;
+								default:
+									break;
+							}
+							break;
+						case 1:
+							break;
+						case 2:
+							switch (state)
+							{
+								case EnemyState.Sleep:
+									if (alertness > 100)
+									{
+										SoundSystem.PlayAtPosition(Game1.gamestate.player.Center, Center, "bearStirReal", true);
+									}
+									else
+									{
+										SoundSystem.PlayAtPosition(Game1.gamestate.player.Center, Center, "bearSleepReal", true);
+									}
+									soundTimer = 240;
+
+									break;
+								case EnemyState.Wander:
+									break;
+								case EnemyState.Sneak:
+									break;
+								case EnemyState.Attack:
+									break;
+								case EnemyState.Flee:
+									break;
+								default:
+									break;
+							}
+
+							break;
+					}
+				}
+			}
+
 			base.Update();
 		}
 
@@ -482,6 +618,8 @@ namespace Imaginosia.Gameplay
 			hitTimer = 6;
 			health -= damage;
 			velocity += knockback;
+			bunnyReloadTimer = 360;
+			fear += damage * 50;
 			if (health <= 0)
 			{
 				dead = true;
@@ -490,6 +628,38 @@ namespace Imaginosia.Gameplay
 				if (ImaginationHandler.IsImagination)
 				{
 					Game1.gamestate.player.magic += 0.5f;
+				}
+
+				if (!ImaginationHandler.IsImagination)
+				{
+					switch (type)
+					{
+						case 0:
+							SoundSystem.PlayAtPosition(Game1.gamestate.player.Center, Center, "wolfDeathReal", true);
+							break;
+						case 1:
+							SoundSystem.PlayAtPosition(Game1.gamestate.player.Center, Center, "ratDeathReal", true);
+							break;
+						case 2: 
+							break;
+					}
+				}
+			}
+			else
+			{
+				if (!ImaginationHandler.IsImagination)
+				{
+					switch (type)
+					{
+						case 0:
+							SoundSystem.PlayAtPosition(Game1.gamestate.player.Center, Center, "wolfWhimperReal", true);
+							break;
+						case 1:
+							// SoundSystem.PlayAtPosition(Game1.gamestate.player.Center, Center, "ratDeathReal", true);
+							break;
+						case 2:
+							break;
+					}
 				}
 			}
 		}

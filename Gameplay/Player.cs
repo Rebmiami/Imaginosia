@@ -97,6 +97,7 @@ namespace Imaginosia.Gameplay
 					{
 						itemSlot = inventorySize - 1;
 					}
+					Assets.Sfx["menuClick"].Play(0.1f, 0, 0);
 				}
 			}
 
@@ -155,11 +156,11 @@ namespace Imaginosia.Gameplay
 				item?.Update();
 			}
 
-			WorldTile focusTile = Game1.gamestate.world.tiles[MouseHelper.MouseTileHover.X, MouseHelper.MouseTileHover.Y];
+			WorldTile hoverTile = Game1.gamestate.world.tiles[MouseHelper.MouseTileHover.X, MouseHelper.MouseTileHover.Y];
 
-			if (canInteractTile && focusTile.floorItem != null)
+			if (canInteractTile && hoverTile.floorItem != null)
 			{
-				MouseText = focusTile.floorItem.GetName();
+				MouseText = hoverTile.floorItem.GetName();
 			}
 
 			// This has got to be the single worst block of code I have ever written in my life
@@ -168,17 +169,17 @@ namespace Imaginosia.Gameplay
 			{
 				if (canInteractTile)
 				{
-					if (inventory[itemSlot] != null && focusTile.floorItem != null && inventory[itemSlot].itemID == focusTile.floorItem.itemID)
+					if (inventory[itemSlot] != null && hoverTile.floorItem != null && inventory[itemSlot].itemID == hoverTile.floorItem.itemID)
 					{
-						MouseText = "Right click to take " + focusTile.floorItem.GetName() + "/Click to drop " + inventory[itemSlot].GetName();
+						MouseText = "Right click to take " + hoverTile.floorItem.GetName() + "/Click to drop " + inventory[itemSlot].GetName();
 
 						if (MouseHelper.Pressed(MouseButton.Left))
 						{
-							Item.MergeStacks(ref focusTile.floorItem, ref inventory[itemSlot]);
+							Item.MergeStacks(ref hoverTile.floorItem, ref inventory[itemSlot]);
 						}
 						if (MouseHelper.Pressed(MouseButton.Right))
 						{
-							Item.MergeStacks(ref inventory[itemSlot], ref focusTile.floorItem);
+							Item.MergeStacks(ref inventory[itemSlot], ref hoverTile.floorItem);
 						}
 						goto SingleAction;
 					}
@@ -187,7 +188,7 @@ namespace Imaginosia.Gameplay
 						int firstOpenSlot = 3;
 						for (int i = firstOpenSlot; i < inventorySize; i++)
 						{
-							if (inventory[i] != null && focusTile.floorItem != null && inventory[i].itemID == focusTile.floorItem.itemID && inventory[i].stackable && inventory[i].stackCount < inventory[i].maxStack)
+							if (inventory[i] != null && hoverTile.floorItem != null && inventory[i].itemID == hoverTile.floorItem.itemID && inventory[i].stackable && inventory[i].stackCount < inventory[i].maxStack)
 							{
 								break;
 							}
@@ -208,18 +209,18 @@ namespace Imaginosia.Gameplay
 						}
 
 
-						if (focusTile.floorItem != null && firstOpenSlot < inventorySize)
+						if (hoverTile.floorItem != null && firstOpenSlot < inventorySize)
 						{
-							MouseText = "Right click to take " + focusTile.floorItem.GetName();
+							MouseText = "Right click to take " + hoverTile.floorItem.GetName();
 							if (MouseHelper.Pressed(MouseButton.Right))
 							{
 								if (inventory[firstOpenSlot] == null)
 								{
-									inventory[firstOpenSlot] = focusTile.TakeItem();
+									inventory[firstOpenSlot] = hoverTile.TakeItem();
 								}
 								else
 								{
-									Item.MergeStacks(ref inventory[firstOpenSlot], ref focusTile.floorItem);
+									Item.MergeStacks(ref inventory[firstOpenSlot], ref hoverTile.floorItem);
 								}
 							}
 							goto SingleAction;
@@ -234,7 +235,7 @@ namespace Imaginosia.Gameplay
 
 							MouseText = "Click to drop " + inventory[itemSlot].GetName();
 							if (MouseHelper.Pressed(MouseButton.Left))
-								focusTile.PlaceItem(ref inventory[itemSlot]);
+								hoverTile.PlaceItem(ref inventory[itemSlot]);
 							goto SingleAction;
 						}
 					}
@@ -347,15 +348,16 @@ namespace Imaginosia.Gameplay
 					}
 				}
 
-				if (focusTile.floorObjectType == FloorObjectType.Mushroom)
+				if (hoverTile.floorObjectType == FloorObjectType.Mushroom)
 				{
 					if (canInteractTile)
 					{
 						MouseText = "Click to obtain hallucinogen";
 						if (MouseHelper.Pressed(MouseButton.Left))
 						{
-							focusTile.floorObjectType = FloorObjectType.None;
+							hoverTile.floorObjectType = FloorObjectType.None;
 							hallucinogen += 3;
+							Assets.Sfx["mushroom"].Play();
 						}
 					}
 					else
@@ -365,7 +367,7 @@ namespace Imaginosia.Gameplay
 					goto SingleAction;
 				}
 
-				if (focusTile.floorObjectType == FloorObjectType.Tree && HeldItem != null && HeldItem.itemID == ItemType.Axe && HeldItem.CanUseItem())
+				if (hoverTile.floorObjectType == FloorObjectType.Tree && HeldItem != null && HeldItem.itemID == ItemType.Axe && HeldItem.CanUseItem())
 				{
 					if (canInteractTile)
 					{
@@ -373,7 +375,7 @@ namespace Imaginosia.Gameplay
 						if (MouseHelper.Pressed(MouseButton.Left))
 						{
 							HeldItem.UseItem();
-							focusTile.Damage(MouseHelper.MouseTileHover);
+							hoverTile.Damage(MouseHelper.MouseTileHover);
 						}
 					}
 					else
@@ -387,20 +389,20 @@ namespace Imaginosia.Gameplay
 				{
 					if (canInteractTile)
 					{
-						if (HeldItem.itemID == ItemType.Matchbox && (focusTile.floorObjectType == FloorObjectType.Tree || (focusTile.floorItem != null && (focusTile.floorItem.itemID == ItemType.Wood || focusTile.floorItem.itemID == ItemType.WoodStake))))
+						if (HeldItem.itemID == ItemType.Matchbox && (hoverTile.floorObjectType == FloorObjectType.Tree || (hoverTile.floorItem != null && (hoverTile.floorItem.itemID == ItemType.Wood || hoverTile.floorItem.itemID == ItemType.WoodStake))))
 						{
 							MouseText = "Click to start a fire";
 							if (MouseHelper.Pressed(MouseButton.Left))
 							{
 								HeldItem.UseItem();
-								focusTile.Ignite(MouseHelper.MouseTileHover);
+								hoverTile.Ignite(MouseHelper.MouseTileHover);
 							}
 							goto SingleAction;
 						}
 					}
 					if (canInteractTile)
 					{
-						if ((HeldItem.itemID == ItemType.Wood || HeldItem.itemID == ItemType.WoodStake) && (focusTile.floorObjectType == FloorObjectType.Campfire))
+						if ((HeldItem.itemID == ItemType.Wood || HeldItem.itemID == ItemType.WoodStake) && (hoverTile.floorObjectType == FloorObjectType.Campfire))
 						{
 							MouseText = "Click to fuel the fire";
 							if (MouseHelper.Pressed(MouseButton.Left))
@@ -410,18 +412,18 @@ namespace Imaginosia.Gameplay
 								{
 									HeldItem = null;
 								}
-								focusTile.floorObjectHealth += 400;
+								hoverTile.floorObjectHealth += 400;
 							}
 							goto SingleAction;
 						}
 					}
 				}
 
-				if (focusTile.floorItem != null && HeldItem != null && HeldItem.CanUseItem())
+				if (hoverTile.floorItem != null && HeldItem != null && HeldItem.CanUseItem())
 				{
 					if (canInteractTile)
 					{
-						if (HeldItem.itemID == ItemType.Matchbox && (focusTile.floorObjectType == FloorObjectType.Tree || focusTile.floorItem.itemID == ItemType.Wood || focusTile.floorItem.itemID == ItemType.WoodStake))
+						if (HeldItem.itemID == ItemType.Matchbox && (hoverTile.floorObjectType == FloorObjectType.Tree || hoverTile.floorItem.itemID == ItemType.Wood || hoverTile.floorItem.itemID == ItemType.WoodStake))
 						{
 							Item item = new Item();
 							item.itemID = ItemType.Clothes;
@@ -431,10 +433,10 @@ namespace Imaginosia.Gameplay
 							if (MouseHelper.Pressed(MouseButton.Left))
 							{
 								HeldItem.UseItem();
-								focusTile.floorItem.stackCount -= 5;
-								if (focusTile.floorItem.stackCount <= 0)
+								hoverTile.floorItem.stackCount -= 5;
+								if (hoverTile.floorItem.stackCount <= 0)
 								{
-									focusTile.floorItem = null;
+									hoverTile.floorItem = null;
 								}
 								Game1.gamestate.world.PlaceItemNearest(MouseHelper.MouseTileHover, ref item);
 							}
@@ -442,7 +444,7 @@ namespace Imaginosia.Gameplay
 						}
 
 
-						if (HeldItem.itemID == ItemType.Knife && focusTile.floorItem.itemID == ItemType.Fur && focusTile.floorItem.stackCount >= 5)
+						if (HeldItem.itemID == ItemType.Knife && hoverTile.floorItem.itemID == ItemType.Fur && hoverTile.floorItem.stackCount >= 5)
 						{
 							Item item = new Item();
 							item.itemID = ItemType.Clothes;
@@ -452,16 +454,16 @@ namespace Imaginosia.Gameplay
 							if (MouseHelper.Pressed(MouseButton.Left))
 							{
 								HeldItem.UseItem();
-								focusTile.floorItem.stackCount -= 5;
-								if (focusTile.floorItem.stackCount <= 0)
+								hoverTile.floorItem.stackCount -= 5;
+								if (hoverTile.floorItem.stackCount <= 0)
 								{
-									focusTile.floorItem = null;
+									hoverTile.floorItem = null;
 								}
 								Game1.gamestate.world.PlaceItemNearest(MouseHelper.MouseTileHover, ref item);
 							}
 							goto SingleAction;
 						}
-						if (HeldItem.itemID == ItemType.BoneKnife && focusTile.floorItem.itemID == ItemType.Fur && focusTile.floorItem.stackCount >= 8)
+						if (HeldItem.itemID == ItemType.BoneKnife && hoverTile.floorItem.itemID == ItemType.Fur && hoverTile.floorItem.stackCount >= 8)
 						{
 							Item item = new Item();
 							item.itemID = ItemType.Bag;
@@ -471,16 +473,16 @@ namespace Imaginosia.Gameplay
 							if (MouseHelper.Pressed(MouseButton.Left))
 							{
 								HeldItem.UseItem();
-								focusTile.floorItem.stackCount -= 8;
-								if (focusTile.floorItem.stackCount <= 0)
+								hoverTile.floorItem.stackCount -= 8;
+								if (hoverTile.floorItem.stackCount <= 0)
 								{
-									focusTile.floorItem = null;
+									hoverTile.floorItem = null;
 								}
 								Game1.gamestate.world.PlaceItemNearest(MouseHelper.MouseTileHover, ref item);
 							}
 							goto SingleAction;
 						}
-						if (HeldItem.itemID == ItemType.Knife && focusTile.floorItem.itemID == ItemType.Bone)
+						if (HeldItem.itemID == ItemType.Knife && hoverTile.floorItem.itemID == ItemType.Bone)
 						{
 							Item item = new Item();
 							item.itemID = ItemType.BoneKnife;
@@ -491,35 +493,36 @@ namespace Imaginosia.Gameplay
 							if (MouseHelper.Pressed(MouseButton.Left))
 							{
 								HeldItem.UseItem();
-								focusTile.floorItem.stackCount--;
-								if (focusTile.floorItem.stackCount <= 0)
+								hoverTile.floorItem.stackCount--;
+								if (hoverTile.floorItem.stackCount <= 0)
 								{
-									focusTile.floorItem = null;
+									hoverTile.floorItem = null;
 								}
 								Game1.gamestate.world.PlaceItemNearest(MouseHelper.MouseTileHover, ref item);
 							}
 							goto SingleAction;
 						}
-						if (HeldItem.itemID == ItemType.Axe && focusTile.floorItem.itemID == ItemType.Bone)
+						if (HeldItem.itemID == ItemType.Axe && hoverTile.floorItem.itemID == ItemType.Bone)
 						{
 							Item item = new Item();
 							item.itemID = ItemType.BoneTrap;
+							item.stackCount = 1;
 							item.SetDefaults();
 
 							MouseText = "Click to make " + item.GetName();
 							if (MouseHelper.Pressed(MouseButton.Left))
 							{
 								HeldItem.UseItem();
-								focusTile.floorItem.stackCount--;
-								if (focusTile.floorItem.stackCount <= 0)
+								hoverTile.floorItem.stackCount--;
+								if (hoverTile.floorItem.stackCount <= 0)
 								{
-									focusTile.floorItem = null;
+									hoverTile.floorItem = null;
 								}
 								Game1.gamestate.world.PlaceItemNearest(MouseHelper.MouseTileHover, ref item);
 							}
 							goto SingleAction;
 						}
-						if (HeldItem.itemID == ItemType.Axe && focusTile.floorItem.itemID == ItemType.Wood)
+						if (HeldItem.itemID == ItemType.Axe && hoverTile.floorItem.itemID == ItemType.Wood)
 						{
 							Item item = new Item();
 							item.itemID = ItemType.WoodStake;
@@ -529,10 +532,10 @@ namespace Imaginosia.Gameplay
 							if (MouseHelper.Pressed(MouseButton.Left))
 							{
 								HeldItem.UseItem();
-								focusTile.floorItem.stackCount--;
-								if (focusTile.floorItem.stackCount <= 0)
+								hoverTile.floorItem.stackCount--;
+								if (hoverTile.floorItem.stackCount <= 0)
 								{
-									focusTile.floorItem = null;
+									hoverTile.floorItem = null;
 								}
 								Game1.gamestate.world.PlaceItemNearest(MouseHelper.MouseTileHover, ref item);
 							}
@@ -592,6 +595,20 @@ namespace Imaginosia.Gameplay
 						}
 						goto SingleAction;
 					}
+					else if (HeldItem.itemID == ItemType.Bone && ImaginationHandler.IsImagination)
+					{
+						MouseText = "Click to eat";
+						if (MouseHelper.Pressed(MouseButton.Left))
+						{
+							HeldItem.UseItem();
+							if (HeldItem.stackCount <= 0)
+							{
+								HeldItem = null;
+							}
+							health += 2;
+						}
+						goto SingleAction;
+					}
 					else if (HeldItem.itemID == ItemType.Bag && !equippedBag)
 					{
 						MouseText = "Click to equip";
@@ -643,6 +660,52 @@ namespace Imaginosia.Gameplay
 						}
 						goto SingleAction;
 					}
+					else if (HeldItem.itemID == ItemType.BoneTrap && hoverTile.floorItem == null && hoverTile.floorObjectType == FloorObjectType.None)
+					{
+						if (canInteractTile)
+						{
+							MouseText = "Click to place";
+							if (MouseHelper.Pressed(MouseButton.Left))
+							{
+								HeldItem.UseItem();
+								if (HeldItem.stackCount <= 0)
+								{
+									HeldItem = null;
+								}
+
+								hoverTile.floorObjectType = FloorObjectType.BoneTrap;
+							}
+						}
+						else
+						{
+							MouseText = "Cannot reach";
+						}
+
+						goto SingleAction;
+					}
+					else if (HeldItem.itemID == ItemType.WoodStake && hoverTile.floorItem == null && hoverTile.floorObjectType == FloorObjectType.None)
+					{
+						if (canInteractTile)
+						{
+							MouseText = "Click to place";
+							if (MouseHelper.Pressed(MouseButton.Left))
+							{
+								HeldItem.UseItem();
+								if (HeldItem.stackCount <= 0)
+								{
+									HeldItem = null;
+								}
+
+								hoverTile.floorObjectType = FloorObjectType.Fence;
+								hoverTile.floorObjectHealth = 3;
+							}
+						}
+						else
+						{
+							MouseText = "Cannot reach";
+						}
+						goto SingleAction;
+					}
 				}
 
 				canUseKnife = true;
@@ -666,6 +729,7 @@ namespace Imaginosia.Gameplay
 						}
 						else
 						{
+							Assets.Sfx["gunshot"].Play();
 							noise += 1000;
 							new Projectile(position, gameDirection, 10, 0)
 							{
@@ -805,7 +869,7 @@ namespace Imaginosia.Gameplay
 				damage++;
 				clothing -= damage;
 			}
-			Game1.ScreenShake = damage;
+			Game1.ScreenShake = damage * 3;
 
 			health -= damage;
 			// DrawHandler.screenShake += 4;
@@ -851,6 +915,11 @@ namespace Imaginosia.Gameplay
 			// }
 
 			int baseFrame = 0;
+
+			if (walkTimer % 30 == 29)
+			{
+				Assets.Sfx["footstepReal"].Play(0.4f, (float)(RNG.rand.NextDouble() - 0.5f) * 0.3f, 0);
+			}
 
 			if (walkTimer % 30 > 15)
 			{

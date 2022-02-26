@@ -9,6 +9,11 @@ namespace Imaginosia.Gameplay
 {
 	public class Item
 	{
+		public Item()
+		{
+			stackCount = 1;
+		}
+
 		public int useCooldown = 0;
 		public int useTime;
 
@@ -83,6 +88,7 @@ namespace Imaginosia.Gameplay
 					break;
 				case ItemType.BoneKnife:
 					stackable = true;
+					consumable = true;
 					maxStack = 15;
 					break;
 				case ItemType.BoneTrap:
@@ -95,6 +101,7 @@ namespace Imaginosia.Gameplay
 					break;
 				case ItemType.WoodStake:
 					stackable = true;
+					consumable = true;
 					maxStack = 15;
 					break;
 				default:

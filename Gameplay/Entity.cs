@@ -48,6 +48,8 @@ namespace Imaginosia.Gameplay
 			{
 				WallCollide();
 			}
+			if (!(this is Projectile))
+			FenceCollide();
 		}
 
 		public virtual void WallCollide()
@@ -75,6 +77,41 @@ namespace Imaginosia.Gameplay
 				position.Y = World.WorldHeight - dimensions.Y - hitboxOffset.Y;
 				velocity.Y = 0;
 			}
+		}
+
+		public void FenceCollide()
+		{
+			Point corner1 = new Vector2(Hitbox.Left + 0.1f, Hitbox.Top + 0.1f).ToPoint();
+			Point corner4 = new Vector2(Hitbox.Right - 0.1f, Hitbox.Bottom - 0.1f).ToPoint();
+
+			Rectangle possibleTouching = new Rectangle(corner1, corner4 - corner1);
+
+			Vector2 displacement = Vector2.Zero;
+
+			for (int i = possibleTouching.Left; i <= possibleTouching.Right; i++)
+			{
+				for (int j = possibleTouching.Top; j <= possibleTouching.Bottom; j++)
+				{
+					if (World.InBounds(new Point(i, j)) && Game1.gamestate.world.tiles[i, j].floorObjectType == FloorObjectType.Fence)
+					{
+						Vector2 tileCenter = new Vector2(i, j) + new Vector2(0.5f, 0);
+						Vector2 directionToTile = Vector2.Normalize(tileCenter - Center);
+
+						float dot = Vector2.Dot(Vector2.Normalize(velocity), directionToTile);
+
+
+						if (dot > 0)
+						displacement += directionToTile * -dot;
+					}
+				}
+			}
+			if (displacement.Length() > 0)
+			position += Vector2.Normalize(displacement) * velocity.Length();
+		}
+
+		public virtual void OnTouchFence(Point point)
+		{
+
 		}
 
 		public Vector2 GamePosition
