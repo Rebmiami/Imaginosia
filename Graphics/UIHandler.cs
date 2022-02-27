@@ -18,6 +18,11 @@ namespace Imaginosia.Graphics
 			player = Game1.gamestate.player;
 		}
 
+		public static void Reset()
+		{
+			player = Game1.gamestate.player;
+		}
+
 		public static void Draw(SpriteBatcher spriteBatcher)
 		{
 			// Draw HUD bars

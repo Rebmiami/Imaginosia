@@ -45,8 +45,11 @@ namespace Imaginosia
 
 		public void DisposeLayer(string layerName)
 		{
-			layers[layerName].Dispose();
-			layers.Remove(layerName);
+			if (layers.ContainsKey(layerName))
+			{
+				layers[layerName].Dispose();
+				layers.Remove(layerName);
+			}
 		}
 
 		public void DrawLayer(string layerName)

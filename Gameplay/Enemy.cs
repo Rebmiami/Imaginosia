@@ -525,7 +525,8 @@ namespace Imaginosia.Gameplay
 				item.SetDefaults();
 				item.stackCount = 1;
 
-				if (RNG.rand.Next(3) == 0)
+				// Bears should always drop an item in the imagination because they're harder to find
+				if (RNG.rand.Next(3) == 0 || type == 2)
 				Game1.gamestate.world.PlaceItemNearest(Center.ToPoint(), ref item);
 			}
 
@@ -759,7 +760,6 @@ namespace Imaginosia.Gameplay
 				};
 			}
 
-
 			spriteBatcher.Draw(texture.texture, ScreenPosition - new Vector2(8, 16), texture.frames[animFrame], color, 0, dimensions / 2, 1, direction.X > 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
 		}
 
@@ -768,7 +768,7 @@ namespace Imaginosia.Gameplay
 			// Bears can destroy wooden fences to get at your stuff
 			if (type == 2 && RNG.rand.Next(40) == 0)
 			{
-				Game1.gamestate.world.tiles[point.X, point.Y].Damage(point);
+				Game1.gamestate.world.tiles[point.X, point.Y].Damage(point, false);
 			}
 
 			base.OnTouchFence(point);

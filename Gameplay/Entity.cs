@@ -94,6 +94,7 @@ namespace Imaginosia.Gameplay
 				{
 					if (World.InBounds(new Point(i, j)) && Game1.gamestate.world.tiles[i, j].floorObjectType == FloorObjectType.Fence)
 					{
+						OnTouchFence(new Point(i, j));
 						Vector2 tileCenter = new Vector2(i, j) + new Vector2(0.5f, 0);
 						Vector2 directionToTile = Vector2.Normalize(tileCenter - Center);
 

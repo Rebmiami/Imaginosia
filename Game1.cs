@@ -5,15 +5,20 @@ using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
+using System.Diagnostics;
 
 namespace Imaginosia
 {
 	public class Game1 : Game
 	{
 		private GraphicsDeviceManager _graphics;
-		private SpriteBatcher spriteBatch;
+		internal SpriteBatcher spriteBatch;
 
 		public static Gamestate gamestate;
+		public static GameScreen gameScreen;
+		public static Stopwatch gameTimer;
+
+		public static int gameStartTimer;
 
 		public Game1()
 		{
@@ -25,12 +30,27 @@ namespace Imaginosia
 		protected override void Initialize()
 		{
 			getGame = this;
-			gamestate = new Gamestate();
+			gameScreen = GameScreen.Menu;
+			gameTimer = new Stopwatch();
 
 			// TODO: Add your initialization logic here
 			Window.AllowUserResizing = true;
+			Window.ClientSizeChanged += Window_ClientSizeChanged;
 
 			base.Initialize();
+		}
+
+		private void Window_ClientSizeChanged(object sender, EventArgs e)
+		{
+			if (Window.ClientBounds.Width < GameWidth)
+			{
+				_graphics.PreferredBackBufferWidth = GameWidth;
+			}
+			if (Window.ClientBounds.Height < GameHeight)
+			{
+				_graphics.PreferredBackBufferHeight = GameHeight;
+			}
+			_graphics.ApplyChanges();
 		}
 
 		public static int GameWidth = 360;
@@ -60,6 +80,7 @@ namespace Imaginosia
 
 
 			Assets.Tex["shroomIcon"] = Content.Load<Texture2D>("MushroomIcon");
+			Assets.Tex["imaginosia"] = Content.Load<Texture2D>("Imaginosia");
 
 			Assets.Tex["flashlightMask"] = Content.Load<Texture2D>("FlashlightMask");
 			Assets.Tex["vignetteMask"] = Content.Load<Texture2D>("VignetteMask");
@@ -108,6 +129,7 @@ namespace Imaginosia
 			Assets.Sfx["enemyHurtImaginary"] = Content.Load<SoundEffect>("SFX/AnimalHitImaginary");
 			Assets.Sfx["enemyPopImaginary"] = Content.Load<SoundEffect>("SFX/EnemyPopImaginary");
 			Assets.Sfx["swoosh"] = Content.Load<SoundEffect>("SFX/Swoosh");
+			Assets.Sfx["death"] = Content.Load<SoundEffect>("SFX/Death");
 
 			Assets.Sfx["mushroom"] = Content.Load<SoundEffect>("SFX/Mushroom");
 
@@ -120,10 +142,74 @@ namespace Imaginosia
 
 		protected override void Update(GameTime gameTime)
 		{
-			if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-				Exit();
+			if (gameStartTimer > 0)
+			{
+				gameStartTimer--;
+				if (gameStartTimer == 0)
+				{
+					gameTimer.Restart();
+					gameScreen = GameScreen.InGame;
+				}
+			}
+			else
+			{
+				if (KeyHelper.Pressed(Keys.Escape) && (gameScreen == GameScreen.Menu || gameScreen == GameScreen.Menu))
+					Exit();
 
-			gamestate.Update();
+				if (gameScreen == GameScreen.InGame)
+					gamestate.Update();
+
+				if (gameScreen == GameScreen.Paused)
+				{
+					int pageSwap = Keybinds.SwapItem(ControllerType.Keyboard, PlayerIndex.One);
+					if (pageSwap != 0)
+					{
+						PauseScreen.guidePage += pageSwap;
+						PauseScreen.guidePage %= PauseScreen.guidePageCount;
+						if (PauseScreen.guidePage < 0)
+						{
+							PauseScreen.guidePage = PauseScreen.guidePageCount - 1;
+						}
+						Assets.Sfx["menuClick"].Play(0.1f, 0, 0);
+					}
+				}
+
+				if (KeyHelper.Pressed(Keys.Space))
+				{
+					if (gameScreen == GameScreen.InGame)
+					{
+						gameTimer.Stop();
+						gameScreen = GameScreen.Paused;
+					}
+					else if (gameScreen == GameScreen.Paused)
+					{
+						gameTimer.Start();
+						gameScreen = GameScreen.InGame;
+					}
+				}
+
+				if (gameScreen == GameScreen.Menu)
+				{
+					if (KeyHelper.Pressed(Keys.Enter))
+					{
+						gamestate = new Gamestate();
+						UIHandler.Reset();
+						gameStartTimer = 60;
+						Assets.Sfx["imaginationPrelude"].Play();
+					}
+				}
+
+				if (gameScreen == GameScreen.Paused || gameScreen == GameScreen.Death)
+				{
+					if (KeyHelper.Pressed(Keys.Escape))
+					{
+						gameTimer.Reset();
+						gameScreen = GameScreen.Menu;
+					}
+				}
+			}
+
+			
 
 			// TODO: Add your update logic here
 			KeyHelper.Update();
@@ -154,88 +240,143 @@ namespace Imaginosia
 
 			destination.Location = ScreenOriginOffset;
 
-			if (ScreenShake > 0)
+			GraphicsDevice.Clear(Color.Black);
+
+			switch (gameScreen)
 			{
-				destination.Location += (RNG.RotateRandom(Vector2.UnitX, 360) * ScreenShake).ToPoint();
-				ScreenShake--;
-			}
+				case GameScreen.Menu:
+
+					spriteBatch.LayerBegin("final");
+					spriteBatch.Draw(Assets.Tex["special"], new Rectangle(0, 0, GameWidth, GameHeight), Color.CadetBlue * 0.2f);
+
+					spriteBatch.Draw(Assets.Tex["imaginosia"], new Vector2(GameWidth / 2 - Assets.Tex["imaginosia"].Width / 2, 40), Color.White);
+					TextPrinter.Print("by Rebmiami, submission for the 2022.1 Brackeys game jam 'It Is Not Real'", new Vector2(GameWidth / 2, 70), spriteBatch, center: true);
+
+					TextPrinter.Print(gameStartTimer > 0 ? "It begins..." : "Press enter to play", new Vector2(GameWidth / 2, 100), spriteBatch, center: true);
+					TextPrinter.Print("Press space to pause and see game guide", new Vector2(GameWidth / 2, 180), spriteBatch, center: true);
+					TextPrinter.Print("Press escape to exit", new Vector2(GameWidth / 2, 200), spriteBatch, center: true);
+
+					if (gameStartTimer > 0)
+					{
+						spriteBatch.Draw(Assets.Tex["special"], new Rectangle(0, 0, GameWidth, GameHeight), Color.White * ((60 - gameStartTimer) / 60f));
+					}
+
+					break;
+				case GameScreen.Paused:
+				case GameScreen.InGame:
+					if (ScreenShake > 0)
+					{
+						destination.Location += (RNG.RotateRandom(Vector2.UnitX, 360) * ScreenShake).ToPoint();
+						ScreenShake--;
+					}
+
+					gamestate.Draw(spriteBatch);
+
+					// spriteBatch.LayerBegin("player", blendState: BlendState.Additive);
+					// spriteBatch.LayerEnd();
+
+					spriteBatch.LayerBegin("light", blendState: BlendState.Additive);
+
+					spriteBatch.Draw(Assets.Tex["flashlightMask"], gamestate.player.ScreenPosition, null, Color.White * 0.8f, (float)Math.Atan2(gamestate.player.direction.Y, gamestate.player.direction.X) - MathHelper.PiOver2, new Vector2(50, 0), 1, SpriteEffects.None, 0);
+					spriteBatch.Draw(Assets.Tex["fireMask"], gamestate.player.ScreenPosition, null, Color.White, 0, new Vector2(540), new Vector2(0.2f, 0.13f), SpriteEffects.None, 0);
+
+					foreach (var item in gamestate.world.fires)
+					{
+						float intensity = (float)Math.Sqrt(gamestate.world.tiles[item.X, item.Y].floorObjectHealth * 0.001f);
 
 
+						spriteBatch.Draw(Assets.Tex["fireMask"], PositionHelper.ToScreenPosition(item.ToVector2() + new Vector2(0.5f)), null, Color.White, 0, new Vector2(540), new Vector2(0.2f, 0.13f) * intensity, SpriteEffects.None, 0);
+					}
+
+					spriteBatch.LayerEnd();
 
 
+					Assets.Darkness.Parameters["LightMask"].SetValue(spriteBatch.GetLayer("light"));
 
-			GraphicsDevice.Clear(Color.CornflowerBlue);
+					bool alwaysLight = false;
 
-			gamestate.Draw(spriteBatch);
+					if (ImaginationHandler.IsImagination || alwaysLight)
+					{
+						spriteBatch.LayerBegin("final");
+					}
+					else
+					{
+						spriteBatch.LayerBegin("final", effect: Assets.Darkness);
+					}
 
-			// spriteBatch.LayerBegin("player", blendState: BlendState.Additive);
-			// spriteBatch.LayerEnd();
+					spriteBatch.DrawLayer("tiles");
+					spriteBatch.LayerEnd();
 
-			spriteBatch.LayerBegin("light", blendState: BlendState.Additive);
+					spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
-			spriteBatch.Draw(Assets.Tex["flashlightMask"], gamestate.player.ScreenPosition, null, Color.White * 0.8f, (float)Math.Atan2(gamestate.player.direction.Y, gamestate.player.direction.X) - MathHelper.PiOver2, new Vector2(50, 0), 1, SpriteEffects.None, 0);
-			spriteBatch.Draw(Assets.Tex["fireMask"], gamestate.player.ScreenPosition, null, Color.White, 0, new Vector2(540), new Vector2(0.2f, 0.13f), SpriteEffects.None, 0);
+					DustManager.Draw(spriteBatch, 1);
 
-			foreach (var item in gamestate.world.fires)
-			{
-				float intensity = (float)Math.Sqrt(gamestate.world.tiles[item.X, item.Y].floorObjectHealth * 0.001f);
+					if (gamestate.player.MouseText != null)
+						TextPrinter.Print(gamestate.player.MouseText, MouseHelper.Position, spriteBatch, background: true);
+
+					UIHandler.Draw(spriteBatch);
+
+					if (gamestate.player.hunger < 2f && ImaginationHandler.IsImagination)
+					{
+						spriteBatch.Draw(Assets.Tex["vignetteOverlay"], new Rectangle(0, 0, GameWidth, GameHeight), Color.Black * (2 - gamestate.player.hunger));
+					}
+					else if (gamestate.player.hunger < 1f)
+					{
+						spriteBatch.Draw(Assets.Tex["vignetteOverlay"], new Rectangle(0, 0, GameWidth, GameHeight), Color.DarkGreen * (1 - gamestate.player.hunger) * 0.6f);
+					}
+
+					if (gamestate.player.invFrames > 0 && !ImaginationHandler.IsImagination)
+					{
+						spriteBatch.Draw(Assets.Tex["vignetteOverlay"], new Rectangle(0, 0, GameWidth, GameHeight), Color.Red * (gamestate.player.invFrames / 30f));
+					}
+
+					if (ImaginationHandler.TransitionTimer > 0)
+					{
+						spriteBatch.Draw(Assets.Tex["special"], new Rectangle(0, 0, GameWidth, GameHeight), Color.White * ((60 - ImaginationHandler.TransitionTimer) / 60f));
+					}
+
+					if (gameScreen == GameScreen.Paused)
+					{
+						PauseScreen.DrawHelp();
+					}
+
+					break;
+				case GameScreen.Death:
+					spriteBatch.LayerBegin("final");
+					TextPrinter.Print("GAME OVER", new Vector2(GameWidth / 2, 70), spriteBatch, center: true);
+
+					TextPrinter.Print(deathMessage, new Vector2(GameWidth / 2, 80), spriteBatch, center: true);
+
+					string deathTimer = "";
 
 
-				spriteBatch.Draw(Assets.Tex["fireMask"], PositionHelper.ToScreenPosition(item.ToVector2() + new Vector2(0.5f)), null, Color.White, 0, new Vector2(540), new Vector2(0.2f, 0.13f) * intensity, SpriteEffects.None, 0);
-			}
+					if (gameTimer.Elapsed.TotalHours > 1)
+					{
+						deathTimer = $"{(int)gameTimer.Elapsed.TotalHours} hours, {gameTimer.Elapsed.Minutes} minutes, and {gameTimer.Elapsed.Seconds} seconds.";
+					}
+					else if (gameTimer.Elapsed.TotalMinutes > 1)
+					{
+						deathTimer = $"{(int)gameTimer.Elapsed.TotalMinutes} minutes and {gameTimer.Elapsed.Seconds} seconds.";
+					}
+					else
+					{
+						deathTimer = $"{gameTimer.Elapsed.Seconds} seconds.";
+					}
 
-			spriteBatch.LayerEnd();
+					deathTimer = "You survived for " + deathTimer;
+					TextPrinter.Print(deathTimer, new Vector2(GameWidth / 2, 90), spriteBatch, center: true);
 
 
-			Assets.Darkness.Parameters["LightMask"].SetValue(spriteBatch.GetLayer("light"));
-
-			bool alwaysLight = false;
-
-			if (ImaginationHandler.IsImagination || alwaysLight)
-			{
-				spriteBatch.LayerBegin("final");
-			}
-			else
-			{
-				spriteBatch.LayerBegin("final", effect: Assets.Darkness);
-			}
-
-			spriteBatch.DrawLayer("tiles");
-			spriteBatch.LayerEnd();
-
-			spriteBatch.Begin(samplerState: SamplerState.PointClamp);
-
-			DustManager.Draw(spriteBatch, 1);
-
-			if (gamestate.player.MouseText != null)
-			TextPrinter.Print(gamestate.player.MouseText, MouseHelper.Position, spriteBatch, background: true);
-
-			UIHandler.Draw(spriteBatch);
-
-			if (gamestate.player.hunger < 2f && ImaginationHandler.IsImagination)
-			{
-				spriteBatch.Draw(Assets.Tex["vignetteOverlay"], new Rectangle(0, 0, GameWidth, GameHeight), Color.Black * (2 - gamestate.player.hunger));
-			}
-			else if (gamestate.player.hunger < 1f)
-			{
-				spriteBatch.Draw(Assets.Tex["vignetteOverlay"], new Rectangle(0, 0, GameWidth, GameHeight), Color.DarkGreen * (1 - gamestate.player.hunger) * 0.6f);
-			}
-
-			if (gamestate.player.invFrames > 0 && !ImaginationHandler.IsImagination)
-			{
-				spriteBatch.Draw(Assets.Tex["vignetteOverlay"], new Rectangle(0, 0, GameWidth, GameHeight), Color.Red * (gamestate.player.invFrames / 30f));
-			}
-
-			if (ImaginationHandler.TransitionTimer > 0)
-			{
-				spriteBatch.Draw(Assets.Tex["special"], new Rectangle(0, 0, GameWidth, GameHeight), Color.White * ((60 - ImaginationHandler.TransitionTimer) / 60f));
+					TextPrinter.Print("Press Escape to return to the main menu.", new Vector2(GameWidth / 2, 120), spriteBatch, center: true);
+					break;
+				default:
+					break;
 			}
 
 			spriteBatch.End();
 
 			spriteBatch.FrameBegin(samplerState: SamplerState.PointClamp);
 			spriteBatch.Draw(spriteBatch.GetLayer("final"), destination, Color.White);
-			// spriteBatch.Draw(spriteBatch.GetLayer("player"), destination, Color.White);
 			spriteBatch.FrameEnd();
 
 			spriteBatch.DisposeLayer("tiles");
@@ -250,5 +391,41 @@ namespace Imaginosia
 		}
 
 		public static Game1 getGame;
+
+		public static string deathMessage;
+
+		internal void GameOver(Entity source)
+		{
+			gameTimer.Stop();
+			gameScreen = GameScreen.Death;
+
+			if (source == null)
+			{
+				deathMessage = "You died of starvation.";
+			}
+			else
+			{
+				switch (((Enemy)source).type)
+				{
+					case 0:
+						deathMessage = "You were killed by a wolf.";
+						break;
+					case 1:
+						deathMessage = "You were killed by a rat.";
+						break;
+					case 2:
+						deathMessage = "You were killed by a bear.";
+						break;
+				}
+			}
+		}
+	}
+
+	public enum GameScreen
+	{
+		Menu,
+		InGame,
+		Paused,
+		Death
 	}
 }

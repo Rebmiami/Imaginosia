@@ -46,7 +46,7 @@ namespace Imaginosia.Gameplay
 			return false;
 		}
 
-		public void Damage(Point point)
+		public void Damage(Point point, bool drops = true)
 		{
 			if (floorObjectType == FloorObjectType.Tree)
 			{
@@ -54,6 +54,7 @@ namespace Imaginosia.Gameplay
 				wood.itemID = ItemType.Wood;
 				wood.SetDefaults();
 				wood.stackCount = RNG.rand.Next(3) + 1;
+				if (drops)
 				Game1.gamestate.world.PlaceItemNearest(point, ref wood);
 
 				floorObjectHealth--;
@@ -86,6 +87,7 @@ namespace Imaginosia.Gameplay
 					stake.itemID = ItemType.WoodStake;
 					stake.SetDefaults();
 					stake.stackCount = 1;
+					if (drops)
 					Game1.gamestate.world.PlaceItemNearest(point, ref stake);
 				}
 			}

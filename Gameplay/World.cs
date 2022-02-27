@@ -81,6 +81,8 @@ namespace Imaginosia.Gameplay
 						int floorObjectOffset = 0;
 						int floorObjectSize = 0;
 
+						Color objectColor = Color.White;
+
 						switch (tile.floorObjectType)
 						{
 							case FloorObjectType.None:
@@ -95,6 +97,11 @@ namespace Imaginosia.Gameplay
 								if (RNG.rand.Next(8) == 0)
 								{
 									tile.floorObjectStyle = RNG.rand.Next(4);
+								}
+
+								if (ImaginationHandler.IsImagination && tile.floorObjectHealth < 3600)
+								{
+									objectColor = Color.Lerp(Color.White, new Color(0, 0, 0, 127), (float)Math.Sin(tile.floorObjectHealth * MathHelper.TwoPi * (1 / 60f) * ( 7 - Math.Floor(Math.Max(Math.Log2(tile.floorObjectHealth / 3600f) + 7, 1)))) * 0.5f + 1);
 								}
 
 								break;
@@ -116,7 +123,7 @@ namespace Imaginosia.Gameplay
 
 						Rectangle box = groundTex.frames[floorObjectOffset + floorObjectSize * tile.floorObjectStyle];
 						box.Height *= floorObjectSize;
-						spriteBatcher.Draw(groundTex.texture, PositionHelper.ToScreenPosition(new Vector2(i, j - floorObjectSize + 1)), box, Color.White);
+						spriteBatcher.Draw(groundTex.texture, PositionHelper.ToScreenPosition(new Vector2(i, j - floorObjectSize + 1)), box, objectColor);
 
 					}
 				}

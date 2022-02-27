@@ -141,6 +141,11 @@ namespace Imaginosia.Gameplay
 			if (velocity.Length() > 0.01f)
 			{
 				walkTimer++;
+
+				if (walkTimer % 30 == 29)
+				{
+					Assets.Sfx["footstepReal"].Play(0.4f, (float)(RNG.rand.NextDouble() - 0.5f) * 0.3f, 0);
+				}
 			}
 			else
 			{
@@ -412,13 +417,20 @@ namespace Imaginosia.Gameplay
 					{
 						if (HeldItem.itemID == ItemType.Matchbox && (hoverTile.floorObjectType == FloorObjectType.Tree || (hoverTile.floorItem != null && (hoverTile.floorItem.itemID == ItemType.Wood || hoverTile.floorItem.itemID == ItemType.WoodStake))))
 						{
-							MouseText = "Click to start a fire";
-							if (MouseHelper.Pressed(MouseButton.Left))
+							if (HeldItem.usesLeft > 0)
 							{
-								HeldItem.UseItem();
-								hoverTile.Ignite(MouseHelper.MouseTileHover);
+								MouseText = "Click to start a fire";
+								if (MouseHelper.Pressed(MouseButton.Left))
+								{
+									HeldItem.UseItem();
+									hoverTile.Ignite(MouseHelper.MouseTileHover);
+								}
+								goto SingleAction;
 							}
-							goto SingleAction;
+							else
+							{
+								MouseText = "No matches left";
+							}
 						}
 					}
 					if (canInteractTile)
@@ -811,11 +823,27 @@ namespace Imaginosia.Gameplay
 				{
 					if (inventory[i] != null && (inventory[i].itemID == ItemType.MeatCooked || inventory[i].itemID == ItemType.MeatRaw))
 					{
-						break;
+						if (ImaginationHandler.IsImagination)
+						{
+							if (magic < MaxMagic)
+								break;
+						}
+						else
+						{
+							break;
+						}
 					}
 					if (inventory[i] != null && inventory[i].itemID == ItemType.Bone && ImaginationHandler.IsImagination)
 					{
-						break;
+						if (ImaginationHandler.IsImagination)
+						{
+							if (health < MaxHealth)
+								break;
+						}
+						else
+						{
+							break;
+						}
 					}
 					firstConsumable++;
 				}
@@ -874,6 +902,7 @@ namespace Imaginosia.Gameplay
 			if (hunger <= 0)
 			{
 				health -= 0.01f;
+				CheckDead(null);
 			}
 
 			if (ImaginationHandler.IsImagination)
@@ -889,7 +918,7 @@ namespace Imaginosia.Gameplay
 			base.Update();
 		}
 
-		public void Hit(int damage, Entity source, Vector2 direction)
+		public void Hit(float damage, Entity source, Vector2 direction)
 		{
 			if (invFrames > 0)
 				return;
@@ -897,10 +926,9 @@ namespace Imaginosia.Gameplay
 			if (clothing > 0)
 			{
 				damage /= 2;
-				damage++;
-				clothing -= damage;
+				clothing -= (int)(damage + 1);
 			}
-			Game1.ScreenShake = damage * 3;
+			Game1.ScreenShake = (int)damage * 3;
 
 			health -= damage;
 			// DrawHandler.screenShake += 4;
@@ -911,14 +939,15 @@ namespace Imaginosia.Gameplay
 				Assets.Sfx["playerHurtImaginary"].Play();
 			}
 
-			CheckDead();
+			CheckDead(source);
 		}
 
-		public void CheckDead()
+		public void CheckDead(Entity source)
 		{
 			if (health <= 0)
 			{
-				// Game1.getGame.GameOver();
+				Assets.Sfx["death"].Play();
+				Game1.getGame.GameOver(source);
 			}
 		}
 
@@ -951,11 +980,6 @@ namespace Imaginosia.Gameplay
 			// }
 
 			int baseFrame = 0;
-
-			if (walkTimer % 30 == 29)
-			{
-				Assets.Sfx["footstepReal"].Play(0.4f, (float)(RNG.rand.NextDouble() - 0.5f) * 0.3f, 0);
-			}
 
 			if (walkTimer % 30 > 15)
 			{

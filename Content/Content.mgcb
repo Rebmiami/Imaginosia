@@ -91,6 +91,18 @@
 /processorParam:TextureFormat=Color
 /build:HudBars.png
 
+#begin Imaginosia.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Imaginosia.png
+
 #begin InventorySquares.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -246,6 +258,12 @@
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:SFX/BoneEatImaginary.wav
+
+#begin SFX/Death.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/Death.wav
 
 #begin SFX/EnemyPopImaginary.wav
 /importer:WavImporter
